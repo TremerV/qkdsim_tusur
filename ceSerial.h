@@ -14,16 +14,6 @@
 #define CESERIAL_H
 #include <string>
 
-#if defined(_WIN64) || defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__) || defined(__CYGWIN__)
-    #define ceWINDOWS 
-#elif defined(unix) || defined(__unix) || defined(__unix__)
-    #define ceLINUX
-#endif
-
-#ifdef ceWINDOWS
-	#include <windows.h>
-#endif
-
 namespace ce {
 
 class ceSerial {
@@ -33,15 +23,8 @@ class ceSerial {
 	long dsize;
 	char parity;
 	float stopbits;
-#ifdef ceWINDOWS
-    HANDLE hComm; //handle
-	OVERLAPPED osReader;
-	OVERLAPPED osWrite;
-	BOOL fWaitingOnRead;
-	COMMTIMEOUTS timeouts_ori;
-#else
 	long fd;//serial_fd
-#endif
+
 public:
 	static void Delay(unsigned long ms);
 	ceSerial();
@@ -73,7 +56,7 @@ public:
 	float GetStopBits();
 };
 
-} // namespace ce 
 
-#include <ceSerial.inl> // Поправка Владимир П. (Инфотекс), в оригинальной библиотеке файл ceSerial.inl назывался ceSerial.cpp и его приходилось подключать в основной код.
+
+} // namespace ce 
 #endif // CESERIAL_H
