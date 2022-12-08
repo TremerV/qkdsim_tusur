@@ -1,1 +1,0 @@
-# qkdsim_tusur
