@@ -2,27 +2,24 @@
 /// @brief Заголовочный файл класса, общающегося с микроконтроллером.
 ///
 /// @copyright Copyright 2022 InfoTeCS.
-#ifndef HARDWARE_H
-#define HARDWARE_H
+#ifndef CONSERIAL_H
+#define CONSERIAL_H
 
-#include <abstracthardwareapi.h>
 #include <ceSerial.h>
+#include <abstracthardwareapi.h>
+#include <map>
 
 namespace hwe
 {
 
-/// @brief Реализация интерфейса api в виртуальной версии стенда.
-class conserial : public AbstractHardwareApi
+class Conserial : public AbstractHardwareApi
 {
-     
-
 public:
 
-     conserial();
-     virtual ~conserial();
-    
-     
-     // Эти команды вот в таком виде нужно реализовать в файле .cpp   
+     Conserial();
+     virtual ~Conserial();
+
+     // Эти команды вот в таком виде нужно реализовать в файле .cpp
      virtual api::InitResponse Init();
      virtual api::AdcResponse RunTest(adc_t testId = 0);
      virtual api::SendMessageResponse Sendmessage(WAngles<angle_t> angles, adc_t power);
@@ -46,17 +43,40 @@ public:
 private:
      ce::ceSerial com_; // Обект класса для соединения с МК
 
+     /// @todo Не нужно ли сделать поля для всех значений, определяемых при инициализации?
      WAngles<angle_t>curAngles_;
      adc_t timeoutTime_ = 2000;
      angle_t rotateStep_ = 0.3;
+     adc_t maxLaserPower_;
 
      uint16_t SendUart(char commandName, uint16_t parameter = 0);
      void ReadUart(std::string * readBuffer);
      uint16_t ParseData(std::string * readBuffer);
      uint8_t Crc8(uint8_t *buffer, uint8_t size = 2);
-     uint8_t CheckOpen();
      uint16_t CalcSteps(angle_t angle, angle_t curAngle, angle_t rotateStep, int * dir);
+
+     const std::map <std::string, char> dict_ = {
+          {"Init", 'A'},
+          {"SendMessage", 'B'},
+          {"SetLaserState", 'C'},
+          {"SetLaserPower", 'D'},
+          {"SetPlateAngle", 'E'},
+          {"SetTimeout", 'F'},
+          {"GetErrorCode", 'G'},
+          {"GetLaserState", 'H'},
+          {"GetLaserPower", 'I'},
+          {"GetTimeout", 'J'},
+          {"GetStartPlatesAngles", 'K'},
+          {"GetCurPlatesAngles", 'L'},
+          {"GetSignalLevel", 'M'},
+          {"GetRotateStep", 'N'},
+          {"GetMaxLaserPower", 'O'},
+          {"GetLightNoises", 'P'},
+          {"GetStartLightNoises", 'Q'},
+          {"GetMaxSignalLevel", 'R'},
+          {"RunSelfTest", 'S'}
+     };
 };
 
 } //namespace
-#endif // HARDWARE_H
+#endif // CONSERIAL_H
