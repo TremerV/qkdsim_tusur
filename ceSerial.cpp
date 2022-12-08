@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <string>
 #include <string.h>
-using namespace std;
 
 
 #include <unistd.h>
@@ -39,7 +38,7 @@ ceSerial::ceSerial()
 	SetStopBits(1);
 }
 
-ceSerial::ceSerial(string Device, long BaudRate,long DataSize,char ParityType,float NStopBits)
+ceSerial::ceSerial(std::string Device, long BaudRate,long DataSize,char ParityType,float NStopBits)
 {
 
 	fd = -1;
@@ -55,11 +54,11 @@ ceSerial::~ceSerial()
 	Close();
 }
 
-void ceSerial::SetPort(string Device) {
+void ceSerial::SetPort(std::string Device) {
 	port = Device;
 }
 
-string ceSerial::GetPort() {
+std::string ceSerial::GetPort() {
 	return port;
 }
 
