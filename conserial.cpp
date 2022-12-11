@@ -29,27 +29,7 @@ Conserial::~Conserial()
 api::InitResponse Conserial::Init()
 {
      api::InitResponse response; // Структура для формирования ответа
-
-     /// @todo !!!Внимание! ======================================================
-     /// Это -- заглушка для команды Init для теста к 8 декабря 2022 года.
-     /// После реализации Init на МК, блок кода до "/// ======" нужно будет убрать.
-
-     // 1. Инициализируем переменные во "внутренней" памяти библиотеки
-     curAngles_ = {0, 0, 0, 0}; // Все углы, как бы, нулевые
-     maxLaserPower_ = 5000; // Какое-то значение для максимальной мощности лазера
-
-     // 2. Заполняем структуру для отправки в пользовательское ПО
-     response.maxLaserPower_ = maxLaserPower_;
-     response.startPlatesAngles_ = {0, 0, 0, 0};
-     response.maxSignalLevels_ = {5000, 5000};
-     response.startLightNoises_ = {0, 0};
-
-     response.errorCode_ = 0; // Типа нормально отработали
-     return response; // Заканчиваем на этом
-     /// ========================================================== Конец заглушки
-
-
-
+    
      // Открываем соединение с МК
      if(com_.Open() != 0)
      {
@@ -59,6 +39,47 @@ api::InitResponse Conserial::Init()
 
      // После установки соединения...
      SendUart(dict_.find("Init")->second); // Посылаем запрос МК
+
+     // Читаем ответ
+     std::string BUFread;
+     ReadUart(&BUFread);
+
+     com_.Close(); // Закрываем соединение
+
+     // Заполняем поля структуры
+     response.startPlatesAngles_.aHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Алисы"     (1я пластинка)
+     response.startPlatesAngles_.aQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.startPlatesAngles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
+     response.startPlatesAngles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
+
+     response.startLightNoises_.h_ = ParseData(&BUFread); // <- начальная засветка детектора, принимающего горизонтальную поляризацию
+     response.startLightNoises_.v_ = ParseData(&BUFread); //<- начальная засветка детектора, принимающего вертикальную поляризацию
+
+     response.maxSignalLevels_.h_ = ParseData(&BUFread); // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+     response.maxSignalLevels_.v_ = ParseData(&BUFread); // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+
+     response.maxLaserPower_ = ParseData(&BUFread);
+
+     response.errorCode_ = 0; // Команда отработала корректно
+
+     curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
+
+     return response; // Возвращаем сформированный ответ
+}
+
+api::InitResponse Conserial::InitByButtons()
+{
+     api::InitResponse response; // Структура для формирования ответа
+    
+     // Открываем соединение с МК
+     if(com_.Open() != 0)
+     {
+          response.errorCode_ = 1; // Не удалось установить соединение
+          return response;
+     }
+
+     // После установки соединения...
+     SendUart(dict_.find("InitByButtons")->second); // Посылаем запрос МК
 
      // Читаем ответ
      std::string BUFread;
@@ -278,19 +299,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      case 4: savedAngle = curAngles_.bQuart_; break;
      }
      int dir;
-     /*
-     // Вычисляем кратчайший путь и угол
-
-     angle = fmod(angle , 360.0); // Подсчет кратчайшего угла поворота
-     double target = angle - savedAngle;
-     //Выбор направления
-     if ( target >= 0 ) {
-          dir = 1;
-     }
-     else {
-          dir = 0;
-          target = -target;
-     }*/
+     
      adc_t Steps;
      Steps = CalcSteps(angle,savedAngle,rotateStep_, &dir); //Подсчёт и округление шагов
 

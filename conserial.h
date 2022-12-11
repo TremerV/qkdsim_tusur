@@ -21,6 +21,7 @@ public:
 
      // Эти команды вот в таком виде нужно реализовать в файле .cpp
      virtual api::InitResponse Init();
+     virtual api::InitResponse InitByButtons();
      virtual api::AdcResponse RunTest(adc_t testId = 0);
      virtual api::SendMessageResponse Sendmessage(WAngles<angle_t> angles, adc_t power);
      virtual api::AdcResponse SetTimeout(adc_t timeout);
@@ -74,7 +75,8 @@ private:
           {"GetLightNoises", 'P'},
           {"GetStartLightNoises", 'Q'},
           {"GetMaxSignalLevel", 'R'},
-          {"RunSelfTest", 'S'}
+          {"RunSelfTest", 'S'},
+          {"InitByButtons", 'T'}
      };
 };
 
