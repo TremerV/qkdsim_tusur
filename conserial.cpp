@@ -285,6 +285,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      if(plateNumber < 1 || plateNumber > 4)
      {
           response.errorCode_ = 2; // // Принят некорректный входной параметр
+          return response;
      }
 
 
