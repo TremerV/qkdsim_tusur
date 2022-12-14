@@ -39,12 +39,12 @@ api::InitResponse Conserial::Init()
 
      // После установки соединения...
      SendUart(dict_.find("Init")->second); // Посылаем запрос МК
-
+     timeoutTime_=56000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
+
 
      // Заполняем поля структуры
      response.startPlatesAngles_.aHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Алисы"     (1я пластинка)
@@ -63,7 +63,7 @@ api::InitResponse Conserial::Init()
      response.errorCode_ = 0; // Команда отработала корректно
 
      curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
-
+     com_.Close(); // Закрываем соединение
      return response; // Возвращаем сформированный ответ
 }
 
@@ -80,12 +80,12 @@ api::InitResponse Conserial::InitByButtons()
 
      // После установки соединения...
      SendUart(dict_.find("InitByButtons")->second); // Посылаем запрос МК
-
+     timeoutTime_=56000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
+
 
      // Заполняем поля структуры
      response.startPlatesAngles_.aHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Алисы"     (1я пластинка)
@@ -104,7 +104,7 @@ api::InitResponse Conserial::InitByButtons()
      response.errorCode_ = 0; // Команда отработала корректно
 
      curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
-
+     com_.Close(); // Закрываем соединение
      return response; // Возвращаем сформированный ответ
 }
 
@@ -117,21 +117,23 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
      {
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
+
      }
 
      // После установки соединения...
-
+     timeoutTime_=10000;
      SendUart(dict_.find("RunSelfTest")->second, testId); // Запрос МК
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрытие соединения
+
 
      response.adcResponse_ = ParseData(&BUFread); // Возвращаем целое число
      response.errorCode_ = 0; // Команда отработала корректно
 
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -153,10 +155,10 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
      int dir1, dir2, dir3, dir4;
 
-     adc_t steps1 = CalcSteps(angles.aHalf_,curAngles_.aHalf_,rotateStep_, &dir1);
-     adc_t steps2 = CalcSteps(angles.aQuart_,curAngles_.aQuart_,rotateStep_, &dir2);
-     adc_t steps3 = CalcSteps(angles.bHalf_,curAngles_.bHalf_,rotateStep_, &dir3);
-     adc_t steps4 = CalcSteps(angles.bQuart_,curAngles_.bQuart_,rotateStep_, &dir4);
+     adc_t steps1 = CalcSteps(angles.aHalf_,rotateStep_, &dir1);
+     adc_t steps2 = CalcSteps(angles.aQuart_,rotateStep_, &dir2);
+     adc_t steps3 = CalcSteps(angles.bHalf_,rotateStep_, &dir3);
+     adc_t steps4 = CalcSteps(angles.bQuart_,rotateStep_, &dir4);
 
      // Открываем соединение с МК
      if(com_.Open() != 0)
@@ -166,7 +168,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      }
 
      // После установки соединения...
-
+     timeoutTime_=10000;
      SendUart(dict_.find("SendMessage")->second,  steps1);
      SendUart(dict_.find("SendMessage")->second,  dir1);
      SendUart(dict_.find("SendMessage")->second, steps2);
@@ -175,13 +177,12 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      SendUart(dict_.find("SendMessage")->second,  dir3);
      SendUart(dict_.find("SendMessage")->second, steps4);
      SendUart(dict_.find("SendMessage")->second,  dir4);
-     //SendUart(dict.find("SendMessage")->second,  power); Не рализовано на МК пока что
+     SendUart(dict_.find("SendMessage")->second,  power);
 
      // Принимаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
 
      // Заполняем поля
      response.newPlatesAngles_.aHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Алисы"     (1я пластинка)
@@ -201,6 +202,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
      curAngles_ = response.newPlatesAngles_; // Запомнили текущие значения углов
 
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -230,18 +232,17 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
      }
 
      // После установки соединения...
-
+     timeoutTime_=3000;
      SendUart(dict_.find("SetLaserState")->second, on); // Запрос МК
 
      // Чтение ответа
      std::string BUFread;
-     ReadUart(&BUFread);
-
-     com_.Close(); // Закрытие соединения
+     ReadUart(&BUFread); 
 
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0; // Команда отработала корректно
 
+     com_.Close(); // Закрытие соединения
      return response; // Возвращаем значение, соответствующее установленному состоянию
 }
 
@@ -249,7 +250,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
 {
       api::AdcResponse response; // Структура для формирования ответа
 
-      if (power >= GetMaxLaserPower().adcResponse_)
+      if (power >= maxLaserPower_)
       {
           response.errorCode_ = 2; // Принят некорректный входной параметр
           return response;
@@ -263,18 +264,17 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
       }
 
       // После установки соединения...
-
+      timeoutTime_=2000;
       SendUart(dict_.find("SetLaserPower")->second, power); // Запрос МК
 
       // Чтение ответа
       std::string BUFread;
       ReadUart(&BUFread);
 
-      com_.Close(); // Закрытие соединения
-
       response.adcResponse_ = ParseData(&BUFread);
       response.errorCode_ = 0; // Команда отработала корректно
 
+      com_.Close(); // Закрытие соединения
       return response; // Возвращаем значение, соответствующее установленному уровню
 }
 
@@ -290,19 +290,10 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
 
      // Рассчитываем шаги...
-     // Запоминаем текущее положение волновой пластины
-     angle_t savedAngle;
-     switch (plateNumber)
-     {
-     case 1: savedAngle = curAngles_.aHalf_;  break;
-     case 2: savedAngle = curAngles_.aQuart_; break;
-     case 3: savedAngle = curAngles_.bHalf_;  break;
-     case 4: savedAngle = curAngles_.bQuart_; break;
-     }
      int dir;
      
      adc_t Steps;
-     Steps = CalcSteps(angle,savedAngle,rotateStep_, &dir); //Подсчёт и округление шагов
+     Steps = CalcSteps(angle,rotateStep_, &dir); //Подсчёт и округление шагов
 
      // Открываем соединение с МК
      if(com_.Open() != 0)
@@ -310,20 +301,20 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=3000;
      // Запросы к МК
-     SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
      SendUart(dict_.find("SetPlateAngle")->second, Steps);
+     SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
      SendUart(dict_.find("SetPlateAngle")->second, dir);
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрытие соединения
+
 
      // Заполняем поля
-     response.angle_ = ParseData(&BUFread) *rotateStep_;
+     response.angle_ = ParseData(&BUFread) * rotateStep_;
      response.errorCode_ = 0; // Команда отработала корректно
 
      // Запоминаем новый угол на будущее
@@ -334,7 +325,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      case 3: curAngles_.bHalf_ = response.angle_; break;
      case 4: curAngles_.bQuart_= response.angle_; break;
      }
-
+     com_.Close(); // Закрытие соединения
      return response; // Возвращаем, чего там получилось установить
 }
 
@@ -350,19 +341,18 @@ api::AdcResponse Conserial::GetLaserState()
      }
 
      // После установки соединения...
-
+     timeoutTime_=2000;
      SendUart(dict_.find("GetLaserState")->second); // Запрос МК
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
-
      // Заполняем поля для ответа
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0; // Команда отработала корректно
 
+     com_.Close(); // Закрытие соединения
      return response; // Возвращаем полученное состояние
 }
 
@@ -378,19 +368,18 @@ api::AdcResponse Conserial::GetLaserPower()
      }
 
      // После установки соединения...
-
+     timeoutTime_=2000;
      SendUart(dict_.find("GetLaserPower")->second); // Запрос МК
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
-
      // Заполняем поля для ответа
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      return response; // Возвращаем полученное состояние
 }
 
@@ -404,18 +393,17 @@ api::AdcResponse Conserial::GetMaxLaserPower()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      // После установки соединения...
      SendUart(dict_.find("GetMaxLaserPower")->second);
 
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close();
-
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      return response; // Возвращаем полученное состояние
 }
 
@@ -429,14 +417,12 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      // Получаем начальные углы поворота волновых пластин от МК
      SendUart(dict_.find("GetStartPlatesAngles")->second);
 
      std::string  BUFread;
      ReadUart(&BUFread);
-
-     com_.Close();
 
      // Записываем полученное в структуру
      response.angles_.aHalf_  = ParseData(&BUFread);//<- полуволновая пластина "Алисы"     (1я пластинка)
@@ -446,6 +432,7 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      // возвращаем структуру
      return response;
 }
@@ -460,7 +447,7 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      // Получаем текущие углы поворота волновых пластин от МК
      SendUart(dict_.find("GetCurPlatesAngles")->second);
 
@@ -477,6 +464,7 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -490,14 +478,12 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      // получаем от МК начальные уровни засветки
      SendUart(dict_.find("GetStartLightNoises")->second);
 
      std::string BUFread;
      ReadUart(&BUFread);
-
-     com_.Close();
 
      // Заполняем структуру
      response.signal_.h_ = ParseData(&BUFread); // <- начальная засветка детектора, принимающего горизонтальную поляризацию
@@ -505,6 +491,7 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -518,13 +505,11 @@ api::SLevelsResponse Conserial::GetSignalLevels()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      SendUart(dict_.find("GetSignalLevel")->second);
 
      std::string BUFread;
      ReadUart(&BUFread);
-
-     com_.Close();
 
      // Заполняем структуру для ответа
      response.signal_.h_ = ParseData(&BUFread); // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
@@ -532,6 +517,7 @@ api::SLevelsResponse Conserial::GetSignalLevels()
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -545,18 +531,18 @@ api::AngleResponse Conserial::GetRotateStep()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-
+     timeoutTime_=2000;
      SendUart(dict_.find("GetRotateStep")->second);
      std::string BUFread;
      ReadUart(&BUFread);
-     com_.Close();
 
-     // Получаем от МК минимальный шаг поворота    ?, переводим его в градусы..?
-     response.angle_ = ParseData(&BUFread);
+     // Получаем от МК количество шагов для поворота на 360 градусов
+     // Считаем сколько градусов в одном шаге
+     int steps_ = ParseData(&BUFread);
+     if(steps_!=0){  rotateStep_ = 360 / steps_;}
      response.errorCode_ = 0;
 
-     rotateStep_ = response.angle_;
-
+     com_.Close(); // Закрытие соединения
      return response;
 }
 
@@ -571,20 +557,19 @@ api::SLevelsResponse Conserial::GetLightNoises()
           return response;
      }
 
-
+     timeoutTime_=2000;
      SendUart(dict_.find("GetLightNoises")->second); // Запрос МУ
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
-
      response.signal_.h_ = ParseData(&BUFread); // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию
      response.signal_.v_ = ParseData(&BUFread); // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрываем соединение
      return response;
 }
 
@@ -599,20 +584,20 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
           return response;
      }
 
-
-     SendUart(dict_.find("GetMaxSignalLevels")->second); // Запрос МК
+     timeoutTime_=2000;
+     SendUart(dict_.find("GetMaxSignalLevel")->second); // Запрос МК
 
      // Чтение ответа
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close(); // Закрываем соединение
 
      response.signal_.h_ = ParseData(&BUFread); // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
      response.signal_.v_ = ParseData(&BUFread); // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
      response.errorCode_ = 0;
 
+     com_.Close(); // Закрываем соединение
      return response;
 }
 
@@ -625,17 +610,17 @@ api::AdcResponse Conserial::GetErrorCode()
           response.errorCode_ = 1;
           return response;
      }
-
+     timeoutTime_=2000;
      // После установки соединения
      SendUart(dict_.find("GetErrorCode")->second);
 
      std::string BUFread;
      ReadUart(&BUFread);
 
-     com_.Close();
-
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0; // Команда отработала корректно
+
+     com_.Close(); // Закрываем соединение
      return response;
 }
 
@@ -690,19 +675,11 @@ void Conserial::ReadUart(std::string * readBuffer)
      while(successFlag)
      {
           buffer += com_.ReadChar(successFlag);
-     }
-     //Если ответа не последовало повторное чтение через 0.5 сек.
-     if (buffer.length() > 0  )
-     {
-          timeoutTime_=500;
-          successFlag = true;
-          ce::ceSerial::Delay(timeoutTime_);
-          while(successFlag)
-          {
-               buffer += com_.ReadChar(successFlag);
-          }
           *readBuffer = buffer;
+
      }
+
+     std::cout<< *readBuffer<<std::endl;
 }
 
 
@@ -725,7 +702,7 @@ uint16_t Conserial::ParseData(std::string * readBuffer){
           {
                while(buffer[0] != '/' || buffer[10] != '#' )
                {
-                    buffer=buffer.substr(1, buffer.length()); //Удаление лишних символов до начального символа /
+                    buffer=buffer.substr(1, buffer.length()); //Удаление лишних символов до начального символа '/'
                     *readBuffer = buffer;
                }
                datapack = buffer.substr(0,11); //Получение первого пакета из буфера
@@ -739,6 +716,7 @@ uint16_t Conserial::ParseData(std::string * readBuffer){
           else
           {
                buffer = "";
+               *readBuffer = buffer;
           }
 
 
@@ -768,7 +746,8 @@ uint16_t Conserial::ParseData(std::string * readBuffer){
      }
      else
      {
-          *readBuffer = "";
+         buffer = "";
+         *readBuffer = buffer;
           std::cout << "NoData" << std::endl;
      }
 
@@ -789,22 +768,19 @@ uint8_t Conserial::Crc8(uint8_t *buffer, uint8_t size) {
      return crc;
 }
 
-uint16_t Conserial::CalcSteps(angle_t angle, angle_t curAngle, angle_t rotateStep, int * dir){
-
-      // Вычисляем кратчайший путь и угол
+uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir){
 
      angle = fmod(angle , 360.0); // Подсчет кратчайшего угла поворота
-     double target = angle - curAngle;
      //Выбор направления
-     if ( target >= 0 ) {
+     if ( angle >= 0 ) {
           *dir = 1;
      }
      else {
           *dir = 0;
-          target = -target;
+          angle = -angle;
      }
      int Steps;
-     Steps = round (target / rotateStep); //Подсчёт и округление шагов
+     Steps = round (angle / rotateStep); //Подсчёт и округление шагов
      return Steps;
 }
 }//namespace

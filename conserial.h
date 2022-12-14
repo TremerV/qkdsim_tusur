@@ -48,13 +48,13 @@ private:
      WAngles<angle_t>curAngles_;
      adc_t timeoutTime_ = 2000;
      angle_t rotateStep_ = 0.3;
-     adc_t maxLaserPower_;
+     adc_t maxLaserPower_ = 100;
 
      uint16_t SendUart(char commandName, uint16_t parameter = 0);
      void ReadUart(std::string * readBuffer);
      uint16_t ParseData(std::string * readBuffer);
      uint8_t Crc8(uint8_t *buffer, uint8_t size = 2);
-     uint16_t CalcSteps(angle_t angle, angle_t curAngle, angle_t rotateStep, int * dir);
+     uint16_t CalcSteps(angle_t angle, angle_t rotateStep, int * dir);
 
      const std::map <std::string, char> dict_ = {
           {"Init", 'A'},
