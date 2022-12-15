@@ -6,7 +6,8 @@
 #include <conserial.h>
 #include <string.h>
 #include <iostream>
-
+#include <fstream>
+using namespace std;
 namespace hwe
 {
 
@@ -24,9 +25,41 @@ Conserial::Conserial()
 
 Conserial::~Conserial()
 { }
+api:: InitResponse Conserial:: Init()
+{
+    api::InitResponse response; // Структура для формирования ответа
+    std::fstream ini_("./Angles.ini");
+    if (!ini_.is_open()) { response = InitByPD();  }
+    else {
+        int n =6;
+        char temp_ [n];
 
+        ini_.getline(temp_, n);//считываем первую строку где лежит угл для 1 пластины. Вид : 003.4
+        temp_[3]='.';//Меняем разделитель на точку (На случай если запятая)
+        string angle1_ = temp_;
+        ini_.getline(temp_, n);
+        temp_[3]='.';
+        string angle2_ = temp_;
+        ini_.getline(temp_, n);
+        temp_[3]='.';
+        string angle3_ = temp_;
+        ini_.getline(temp_, n);
+        temp_[3]='.';
+        string angle4_ = temp_;
 
-api::InitResponse Conserial::Init()
+        if (angle1_.length() > 0 && angle2_.length() > 0 && angle3_.length() > 0 && angle4_.length() > 0){ //Если в файл записаны углы
+        WAngles<angle_t> anglesIni_;
+        anglesIni_.aHalf_= stof (angle1_) ;
+        anglesIni_.aQuart_= stof (angle2_);
+        anglesIni_.bHalf_= stof (angle3_);
+        anglesIni_.bQuart_= stof (angle4_);
+        response =  InitByButtons(anglesIni_);} //Инициализация по концевикам
+        else {response = InitByPD();}//Инициализация по фотодиодам
+    }
+    return response;
+}
+
+api::InitResponse Conserial::InitByPD()
 {
      api::InitResponse response; // Структура для формирования ответа
     
@@ -39,7 +72,7 @@ api::InitResponse Conserial::Init()
 
      // После установки соединения...
      SendUart(dict_.find("Init")->second); // Посылаем запрос МК
-     timeoutTime_=56000;
+     //timeoutTime_=37000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -67,7 +100,7 @@ api::InitResponse Conserial::Init()
      return response; // Возвращаем сформированный ответ
 }
 
-api::InitResponse Conserial::InitByButtons()
+api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
 {
      api::InitResponse response; // Структура для формирования ответа
     
@@ -77,10 +110,17 @@ api::InitResponse Conserial::InitByButtons()
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
+     int steps1_ = round(fmod(angles.aHalf_,360)/rotateStep_);
+     int steps2_ = round(fmod(angles.aQuart_,360)/rotateStep_);
+     int steps3_ = round(fmod(angles.bHalf_,360)/rotateStep_);
+     int steps4_ = round(fmod(angles.bQuart_,360)/rotateStep_);
 
      // После установки соединения...
-     SendUart(dict_.find("InitByButtons")->second); // Посылаем запрос МК
-     timeoutTime_=56000;
+     SendUart(dict_.find("InitByButtons")->second,steps1_); // Посылаем запрос МК
+     SendUart(dict_.find("InitByButtons")->second,steps2_); // Посылаем запрос МК
+     SendUart(dict_.find("InitByButtons")->second,steps3_); // Посылаем запрос МК
+     SendUart(dict_.find("InitByButtons")->second,steps4_); // Посылаем запрос МК
+     //timeoutTime_=36000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -250,7 +290,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
 {
       api::AdcResponse response; // Структура для формирования ответа
 
-      if (power >= maxLaserPower_)
+      if (power > maxLaserPower_)
       {
           response.errorCode_ = 2; // Принят некорректный входной параметр
           return response;
@@ -264,7 +304,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
       }
 
       // После установки соединения...
-      timeoutTime_=2000;
+      timeoutTime_=3000;
       SendUart(dict_.find("SetLaserPower")->second, power); // Запрос МК
 
       // Чтение ответа
@@ -303,8 +343,8 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      }
      timeoutTime_=3000;
      // Запросы к МК
-     SendUart(dict_.find("SetPlateAngle")->second, Steps);
      SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
+     SendUart(dict_.find("SetPlateAngle")->second, Steps);
      SendUart(dict_.find("SetPlateAngle")->second, dir);
 
      // Чтение ответа
@@ -659,7 +699,8 @@ uint16_t Conserial::SendUart (char commandName, uint16_t Parameter)
      // Формирование пакета
      pack += start + std::to_string(status) + commandName + param + crc + end;
 
-     char packChar[pack.length() + 1];
+     char packChar[pack.length()];
+
      // std::cout << pack << std::endl;
      com_.Write(strcpy(packChar, pack.c_str()));
      return 1;
@@ -676,10 +717,7 @@ void Conserial::ReadUart(std::string * readBuffer)
      {
           buffer += com_.ReadChar(successFlag);
           *readBuffer = buffer;
-
      }
-
-     std::cout<< *readBuffer<<std::endl;
 }
 
 
@@ -691,6 +729,7 @@ uint16_t Conserial::ParseData(std::string * readBuffer){
      uint16_t checksum = 0;
      std::string buffer = *readBuffer;
      std::string datapack = "";
+
      if (buffer.length() > 10) //Буфер заполнен
      {
 
@@ -768,7 +807,7 @@ uint8_t Conserial::Crc8(uint8_t *buffer, uint8_t size) {
      return crc;
 }
 
-uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir){
+uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir =0){
 
      angle = fmod(angle , 360.0); // Подсчет кратчайшего угла поворота
      //Выбор направления

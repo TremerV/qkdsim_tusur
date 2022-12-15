@@ -22,7 +22,8 @@ public:
      /// @return Структура, содержащая информацию о начальных уровнях шумов, начальных положениях волновых пластин,
      /// максимальном уровне накачки лазера и уровне сигнала при максимальном уровне накачке детекторов.
      virtual api::InitResponse Init() = 0;
-     virtual api::InitResponse InitByButtons() = 0;
+     virtual api::InitResponse InitByPD() = 0;
+     virtual api::InitResponse InitByButtons(WAngles<hwe::angle_t> angles) = 0;
 
      virtual api::AdcResponse RunTest(adc_t testId = 0) = 0;
 

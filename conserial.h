@@ -21,7 +21,8 @@ public:
 
      // Эти команды вот в таком виде нужно реализовать в файле .cpp
      virtual api::InitResponse Init();
-     virtual api::InitResponse InitByButtons();
+     virtual api::InitResponse InitByPD();
+     virtual api::InitResponse InitByButtons(WAngles<angle_t> angles);
      virtual api::AdcResponse RunTest(adc_t testId = 0);
      virtual api::SendMessageResponse Sendmessage(WAngles<angle_t> angles, adc_t power);
      virtual api::AdcResponse SetTimeout(adc_t timeout);
