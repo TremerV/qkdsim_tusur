@@ -47,7 +47,7 @@ api:: InitResponse Conserial:: Init()
         temp_[3]='.';
         string angle4_ = temp_;
 
-        if (angle1_.length() > 0 && angle2_.length() > 0 && angle3_.length() > 0 && angle4_.length() > 0){ //Если в файл записаны углы
+        if (angle1_.length() > 4 && angle2_.length() > 4 && angle3_.length() > 4 && angle4_.length() > 4){ //Если в файл записаны углы
         WAngles<angle_t> anglesIni_;
         anglesIni_.aHalf_= stof (angle1_) ;
         anglesIni_.aQuart_= stof (angle2_);
@@ -72,7 +72,7 @@ api::InitResponse Conserial::InitByPD()
 
      // После установки соединения...
      SendUart(dict_.find("Init")->second); // Посылаем запрос МК
-     //timeoutTime_=37000;
+     timeoutTime_=37000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -120,7 +120,7 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
      SendUart(dict_.find("InitByButtons")->second,steps2_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps3_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps4_); // Посылаем запрос МК
-     //timeoutTime_=36000;
+     timeoutTime_=36000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -699,7 +699,7 @@ uint16_t Conserial::SendUart (char commandName, uint16_t Parameter)
      // Формирование пакета
      pack += start + std::to_string(status) + commandName + param + crc + end;
 
-     char packChar[pack.length()];
+     char packChar[pack.length()+1];
 
      // std::cout << pack << std::endl;
      com_.Write(strcpy(packChar, pack.c_str()));
@@ -823,4 +823,5 @@ uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir =0){
      return Steps;
 }
 }//namespace
+
 
