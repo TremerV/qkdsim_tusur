@@ -72,7 +72,7 @@ api::InitResponse Conserial::InitByPD()
 
      // После установки соединения...
      SendUart(dict_.find("Init")->second); // Посылаем запрос МК
-     timeoutTime_=37000;
+     timeoutTime_=56000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -120,7 +120,7 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
      SendUart(dict_.find("InitByButtons")->second,steps2_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps3_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps4_); // Посылаем запрос МК
-     timeoutTime_=36000;
+     timeoutTime_=56000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -343,8 +343,8 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      }
      timeoutTime_=3000;
      // Запросы к МК
-     SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
      SendUart(dict_.find("SetPlateAngle")->second, Steps);
+     SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
      SendUart(dict_.find("SetPlateAngle")->second, dir);
 
      // Чтение ответа
@@ -578,8 +578,8 @@ api::AngleResponse Conserial::GetRotateStep()
 
      // Получаем от МК количество шагов для поворота на 360 градусов
      // Считаем сколько градусов в одном шаге
-     int steps_ = ParseData(&BUFread);
-     if(steps_!=0){  rotateStep_ = 360 / steps_;}
+     float steps_ = ParseData(&BUFread);
+     if(steps_!=0){  rotateStep_ = 360.0 / steps_;}
      response.errorCode_ = 0;
 
      com_.Close(); // Закрытие соединения
