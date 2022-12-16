@@ -62,7 +62,7 @@ api:: InitResponse Conserial:: Init()
 api::InitResponse Conserial::InitByPD()
 {
      api::InitResponse response; // Структура для формирования ответа
-    
+
      // Открываем соединение с МК
      if(com_.Open() != 0)
      {
@@ -103,7 +103,7 @@ api::InitResponse Conserial::InitByPD()
 api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
 {
      api::InitResponse response; // Структура для формирования ответа
-    
+
      // Открываем соединение с МК
      if(com_.Open() != 0)
      {
@@ -120,7 +120,7 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
      SendUart(dict_.find("InitByButtons")->second,steps2_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps3_); // Посылаем запрос МК
      SendUart(dict_.find("InitByButtons")->second,steps4_); // Посылаем запрос МК
-     timeoutTime_=56000;
+     timeoutTime_=36000;
      // Читаем ответ
      std::string BUFread;
      ReadUart(&BUFread);
@@ -208,7 +208,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      }
 
      // После установки соединения...
-     timeoutTime_=10000;
+     timeoutTime_=15000;
      SendUart(dict_.find("SendMessage")->second,  steps1);
      SendUart(dict_.find("SendMessage")->second,  dir1);
      SendUart(dict_.find("SendMessage")->second, steps2);
@@ -230,7 +230,6 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      response.newPlatesAngles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
      response.newPlatesAngles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
-
      response.currentLightNoises_.h_ = ParseData(&BUFread); // <- засветка детектора, принимающего горизонтальную поляризацию
      response.currentLightNoises_.v_ = ParseData(&BUFread); // <- засветка детектора, принимающего вертикальную поляризацию
 
@@ -238,7 +237,6 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      response.currentSignalLevels_.v_ = ParseData(&BUFread); // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
      response.errorCode_ = 0; // Команда отработала корректно
-
 
      curAngles_ = response.newPlatesAngles_; // Запомнили текущие значения углов
 
@@ -277,7 +275,7 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
 
      // Чтение ответа
      std::string BUFread;
-     ReadUart(&BUFread); 
+     ReadUart(&BUFread);
 
      response.adcResponse_ = ParseData(&BUFread);
      response.errorCode_ = 0; // Команда отработала корректно
@@ -331,7 +329,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
      // Рассчитываем шаги...
      int dir;
-     
+
      adc_t Steps;
      Steps = CalcSteps(angle,rotateStep_, &dir); //Подсчёт и округление шагов
 
@@ -718,6 +716,7 @@ void Conserial::ReadUart(std::string * readBuffer)
           buffer += com_.ReadChar(successFlag);
           *readBuffer = buffer;
      }
+     std::cout<<*readBuffer<<std::endl;
 }
 
 
@@ -823,5 +822,4 @@ uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir =0){
      return Steps;
 }
 }//namespace
-
 
