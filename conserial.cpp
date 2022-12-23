@@ -207,7 +207,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      }
 
      // После установки соединения...
-     timeoutTime_=10000;
+     timeoutTime_=7000;
      SendUart(dict_.find("SendMessage")->second,  steps1);
      SendUart(dict_.find("SendMessage")->second, steps2);
      SendUart(dict_.find("SendMessage")->second, steps3);
@@ -333,7 +333,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
           response.errorCode_ = 1; // Не удалось установить соединение
           return response;
      }
-     timeoutTime_=3000;
+     timeoutTime_=4000;
      // Запросы к МК
      SendUart(dict_.find("SetPlateAngle")->second, Steps);
      SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
