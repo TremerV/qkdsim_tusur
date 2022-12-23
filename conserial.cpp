@@ -80,10 +80,10 @@ api::InitResponse Conserial::InitByPD()
 
 
      // Заполняем поля структуры
-     response.startPlatesAngles_.aHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Алисы"     (1я пластинка)
-     response.startPlatesAngles_.aQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Алисы" (2я пластинка)
-     response.startPlatesAngles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
-     response.startPlatesAngles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
+     response.startPlatesAngles_.aHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
+     response.startPlatesAngles_.aQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.startPlatesAngles_.bHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+     response.startPlatesAngles_.bQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
      response.startLightNoises_.h_ = ParseData(&BUFread); // <- начальная засветка детектора, принимающего горизонтальную поляризацию
      response.startLightNoises_.v_ = ParseData(&BUFread); //<- начальная засветка детектора, принимающего вертикальную поляризацию
@@ -128,10 +128,10 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
 
 
      // Заполняем поля структуры
-     response.startPlatesAngles_.aHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Алисы"     (1я пластинка)
-     response.startPlatesAngles_.aQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Алисы" (2я пластинка)
-     response.startPlatesAngles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
-     response.startPlatesAngles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
+     response.startPlatesAngles_.aHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
+     response.startPlatesAngles_.aQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.startPlatesAngles_.bHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+     response.startPlatesAngles_.bQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
      response.startLightNoises_.h_ = ParseData(&BUFread); // <- начальная засветка детектора, принимающего горизонтальную поляризацию
      response.startLightNoises_.v_ = ParseData(&BUFread); //<- начальная засветка детектора, принимающего вертикальную поляризацию
@@ -193,12 +193,11 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
      api::SendMessageResponse response; // Структура для формирования ответа
 
-     int dir1, dir2, dir3, dir4;
 
-     adc_t steps1 = CalcSteps(angles.aHalf_,rotateStep_, &dir1);
-     adc_t steps2 = CalcSteps(angles.aQuart_,rotateStep_, &dir2);
-     adc_t steps3 = CalcSteps(angles.bHalf_,rotateStep_, &dir3);
-     adc_t steps4 = CalcSteps(angles.bQuart_,rotateStep_, &dir4);
+     adc_t steps1 = CalcSteps(angles.aHalf_,rotateStep_);
+     adc_t steps2 = CalcSteps(angles.aQuart_,rotateStep_);
+     adc_t steps3 = CalcSteps(angles.bHalf_,rotateStep_);
+     adc_t steps4 = CalcSteps(angles.bQuart_,rotateStep_);
 
      // Открываем соединение с МК
      if(com_.Open() != 0)
@@ -208,15 +207,11 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
      }
 
      // После установки соединения...
-     timeoutTime_=15000;
+     timeoutTime_=10000;
      SendUart(dict_.find("SendMessage")->second,  steps1);
-     SendUart(dict_.find("SendMessage")->second,  dir1);
      SendUart(dict_.find("SendMessage")->second, steps2);
-     SendUart(dict_.find("SendMessage")->second,  dir2);
      SendUart(dict_.find("SendMessage")->second, steps3);
-     SendUart(dict_.find("SendMessage")->second,  dir3);
      SendUart(dict_.find("SendMessage")->second, steps4);
-     SendUart(dict_.find("SendMessage")->second,  dir4);
      SendUart(dict_.find("SendMessage")->second,  power);
 
      // Принимаем ответ
@@ -225,10 +220,10 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
 
      // Заполняем поля
-     response.newPlatesAngles_.aHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Алисы"     (1я пластинка)
-     response.newPlatesAngles_.aQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Алисы" (2я пластинка)
-     response.newPlatesAngles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
-     response.newPlatesAngles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
+     response.newPlatesAngles_.aHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Алисы"     (1я пластинка)
+     response.newPlatesAngles_.aQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.newPlatesAngles_.bHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+     response.newPlatesAngles_.bQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
      response.currentLightNoises_.h_ = ParseData(&BUFread); // <- засветка детектора, принимающего горизонтальную поляризацию
      response.currentLightNoises_.v_ = ParseData(&BUFread); // <- засветка детектора, принимающего вертикальную поляризацию
@@ -328,10 +323,9 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
 
      // Рассчитываем шаги...
-     int dir;
 
      adc_t Steps;
-     Steps = CalcSteps(angle,rotateStep_, &dir); //Подсчёт и округление шагов
+     Steps = CalcSteps(angle,rotateStep_); //Подсчёт и округление шагов
 
      // Открываем соединение с МК
      if(com_.Open() != 0)
@@ -343,7 +337,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
      // Запросы к МК
      SendUart(dict_.find("SetPlateAngle")->second, Steps);
      SendUart(dict_.find("SetPlateAngle")->second, plateNumber);
-     SendUart(dict_.find("SetPlateAngle")->second, dir);
+
 
      // Чтение ответа
      std::string BUFread;
@@ -352,7 +346,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
 
      // Заполняем поля
-     response.angle_ = ParseData(&BUFread) * rotateStep_;
+     response.angle_ = ((float)ParseData(&BUFread)) * rotateStep_;
      response.errorCode_ = 0; // Команда отработала корректно
 
      // Запоминаем новый угол на будущее
@@ -463,10 +457,10 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
      ReadUart(&BUFread);
 
      // Записываем полученное в структуру
-     response.angles_.aHalf_  = ParseData(&BUFread);//<- полуволновая пластина "Алисы"     (1я пластинка)
-     response.angles_.aQuart_ = ParseData(&BUFread); //<- четвертьволновая пластина "Алисы" (2я пластинка)
-     response.angles_.bHalf_  = ParseData(&BUFread); //<- полуволновая пластина "Боба"      (3я пластинка)
-     response.angles_.bQuart_ = ParseData(&BUFread); //<- четвертьволновая пластина "Боба"  (4я пластинка)
+     response.angles_.aHalf_  = ((float)ParseData(&BUFread)) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
+     response.angles_.aQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.angles_.bHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
+     response.angles_.bQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
 
      response.errorCode_ = 0;
 
@@ -495,11 +489,14 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
      com_.Close();
 
      // Записываем полученное в структуру
-     response.angles_.aHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Алисы"     (1я пластинка)
-     response.angles_.aQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Алисы" (2я пластинка)
-     response.angles_.bHalf_  = ParseData(&BUFread); // <- полуволновая пластина "Боба"      (3я пластинка)
-     response.angles_.bQuart_ = ParseData(&BUFread); // <- четвертьволновая пластина "Боба"  (4я пластинка)
-
+     response.angles_.aHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Алисы"     (1я пластинка)
+     response.angles_.aQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+     response.angles_.bHalf_  = ((float)ParseData(&BUFread)) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+     response.angles_.bQuart_ = ((float)ParseData(&BUFread)) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
+     cout<< response.angles_.aHalf_<<endl;
+     cout<< response.angles_.aQuart_<<endl;
+     cout<< response.angles_.bHalf_<<endl;
+     cout<< response.angles_.bQuart_<<endl;
      response.errorCode_ = 0;
 
      com_.Close(); // Закрытие соединения
@@ -716,7 +713,7 @@ void Conserial::ReadUart(std::string * readBuffer)
           buffer += com_.ReadChar(successFlag);
           *readBuffer = buffer;
      }
-     std::cout<<*readBuffer<<std::endl;
+     //std::cout<<*readBuffer<<std::endl;
 }
 
 
@@ -806,19 +803,11 @@ uint8_t Conserial::Crc8(uint8_t *buffer, uint8_t size) {
      return crc;
 }
 
-uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep, int * dir =0){
+uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep){
 
      angle = fmod(angle , 360.0); // Подсчет кратчайшего угла поворота
-     //Выбор направления
-     if ( angle >= 0 ) {
-          *dir = 1;
-     }
-     else {
-          *dir = 0;
-          angle = -angle;
-     }
-     int Steps;
-     Steps = round (angle / rotateStep); //Подсчёт и округление шагов
+
+     int Steps = round (angle / rotateStep); //Подсчёт и округление шагов
      return Steps;
 }
 }//namespace
