@@ -8,6 +8,7 @@
 #include <ceSerial.h>
 #include <abstracthardwareapi.h>
 #include <map>
+#include <ctime>
 
 namespace hwe
 {
@@ -50,12 +51,13 @@ private:
      adc_t timeoutTime_ = 2000;
      angle_t rotateStep_ = 0.3;
      adc_t maxLaserPower_ = 100;
+     int counter_ = 1;
 
      uint16_t SendUart(char commandName, uint16_t parameter = 0);
      void ReadUart(std::string * readBuffer);
      uint16_t ParseData(std::string * readBuffer);
      uint8_t Crc8(uint8_t *buffer, uint8_t size = 2);
-     uint16_t CalcSteps(angle_t angle, angle_t rotateStep, int * dir);
+     uint16_t CalcSteps(angle_t angle, angle_t rotateStep);
 
      const std::map <std::string, char> dict_ = {
           {"Init", 'A'},
@@ -83,3 +85,4 @@ private:
 
 } //namespace
 #endif // CONSERIAL_H
+
