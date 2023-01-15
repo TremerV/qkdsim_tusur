@@ -9,7 +9,7 @@
 // http://www.silabs.com/documents/public/application-notes/an197.pdf
 // https://msdn.microsoft.com/en-us/library/ff802693.aspx
 // http://www.cplusplus.com/forum/unices/10491/
-
+#include <iostream>
 #include "ceSerial.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,8 +20,15 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <sys/poll.h>
+#include <sys/types.h>
+
+#include <termios.h> /* POSIX terminal control definitions */
+#include <linux/serial.h> // for RS-485
 #include <sys/ioctl.h>
 
+#include <cstddef>
+#include <bitset>
 namespace ce {
 
 void ceSerial::Delay(unsigned long ms){
@@ -33,9 +40,9 @@ ceSerial::ceSerial()
 	fd = -1;
 	port = "/dev/ttyUSB0";
 	SetBaudRate(9600);
-	SetDataSize(8);
+    SetDataSize(8);
 	SetParity('N');
-	SetStopBits(1);
+    SetStopBits(1);
 }
 
 ceSerial::ceSerial(std::string Device, long BaudRate,long DataSize,char ParityType,float NStopBits)
@@ -85,7 +92,7 @@ char ceSerial::GetParity() {
 
 void ceSerial::SetStopBits(float nbits) {
 	if (nbits >= 2) stopbits = 2;
-	else stopbits = 1;
+    else stopbits = 1;
 }
 
 float ceSerial::GetStopBits() {
@@ -115,7 +122,7 @@ long ceSerial::Open(void) {
 	settings.c_cc[VMIN] = 1;
 	settings.c_cc[VTIME] = 0;
 
-	fd = open(port.c_str(), O_RDWR | O_NONBLOCK);
+    fd = open(port.c_str(), O_RDWR | O_NONBLOCK);
 	if (fd == -1) {
 		return -1;
 	}
@@ -184,26 +191,120 @@ long ceSerial::GetBaudRate() {
 	else baudrate = 230400;
 	return baudrate;
 }
-char ceSerial::ReadChar(bool& success)
+
+ce::Package ceSerial:: Read_com(int timeout){
+    bool startPackFlag_=false;
+    bool flag_ = 0;
+
+    ce::Package pack;
+    uint8_t currentByte=0;
+
+
+    if (!IsOpened()) {  return {0,0,0,0,0,0,0,0,0,0,0,0,0};	}
+
+    struct pollfd fds;
+    fds.fd=fd;
+    fds.events = POLLIN;
+
+    while (startPackFlag_ != true) {
+        if (poll(&fds, 1, timeout) > 0){
+            read(fd, &buffer, 1);
+            currentByte = buffer;
+            if (currentByte == 255){ flag_ = 1;}
+            else {if (flag_ == 1){
+                    if (currentByte != 254) {flag_ = 0;}
+                    else{startPackFlag_ = true;
+                            break;}
+                    }else {flag_ = 0;}
+                }
+        }else {std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
+            break;}//конец таймаута
+    }
+    uint16_t  params [11] = {0};
+    if (startPackFlag_ == true){
+        int count = 10;
+        int paramCnt =1;
+        unsigned short p=0;
+        while (p != 65535) {
+            if (poll(&fds, 1, timeout) > 0){
+                read(fd, &buffer, 1);
+                currentByte = buffer;
+                if (count>9){ pack.status_=currentByte; }
+                else if (count>8){ pack.nameCommand_=currentByte; }
+                else if (count>7){ pack.crc_=currentByte; }
+                else{
+                    p = p + currentByte;
+                    if (count>6){ p = p<<8; }
+                    else{
+                        paramCnt++;
+                        if (p==65535){
+                            break;}
+                        else{
+                            params[0] = paramCnt-1;
+                            params[paramCnt-1]= p;
+                            p=0;
+                            count=8;
+                        }
+                    }
+                }
+                count--;
+            }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
+                break;}
+        }
+    }else {return {0,0,0,0,0,0,0,0,0,0,0,0,0};}
+
+    pack.param1 = params[1];
+    pack.param2 = params[2];
+    pack.param3 = params[3];
+    pack.param4 = params[4];
+    pack.param5 = params[5];
+    pack.param6 = params[6];
+    pack.param7 = params[7];
+    pack.param8 = params[8];
+    pack.param9 = params[9];
+    pack.param10 = params[10];
+    return pack ;
+}
+uint16_t ceSerial::ReadChar(bool& success)
 {
 	success=false;
 	if (!IsOpened()) {return 0;	}
-	success=read(fd, &rxchar, 1)==1;
+    success=read(fd, &rxchar, 1)==1;
 	return rxchar;
 }
-char ceSerial::ReadChar()
+std::string ceSerial::ReadChar()
 {
-	if (!IsOpened()) {return 0;	}
-	read(fd, &rxchar, 1);
-	return rxchar;
+    if (!IsOpened()) {return "0";}
+    read(fd, &buf, 8);
+    return buf;
 }
-bool ceSerial::Write(char *data)
+bool ceSerial::Write(uint16_t *data)
 {
-	if (!IsOpened()) {return false;	}
-	long n = strlen(data);
-	if (n < 0) n = 0;
-	else if(n > 1024) n = 1024;
-	return (write(fd, data, n)==n);
+    if (!IsOpened()) {return false;	}
+
+    int n = sizeof(*data);
+    if (n < 0) n = 0;
+    else if(n > 1024) n = 1024;
+    return (write(fd, data,n)==n);
+}
+
+bool ceSerial::Write(uint8_t *data)
+{
+    if (!IsOpened()) {return false;	}
+    long n = sizeof(*data);
+    if (n < 0) n = 0;
+    else if(n > 1024) n = 1024;
+    return (write(fd, data, n)==n);
+}
+bool ceSerial::Write(char * data)
+{
+    if (!IsOpened()) {return false;	}
+    long n = strlen(data);
+    std:: cout<< data<<std::endl;
+    std:: cout<< n<<std::endl;
+    if (n < 0) n = 0;
+    else if(n > 1024) n = 1024;
+    return (write(fd, data, n)==n);
 }
 
 bool ceSerial::Write(char *data,long n)
@@ -214,12 +315,13 @@ bool ceSerial::Write(char *data,long n)
 	return (write(fd, data, n)==n);
 }
 
-bool ceSerial::WriteChar(char ch)
+bool ceSerial::WriteChar(char *ch)
 {
-	char s[2];
-	s[0]=ch;
-	s[1]=0;//null terminated
-	return Write(s);
+    if (!IsOpened()) {return false;	}
+    long n = strlen(ch);
+    if (n < 0) n = 0;
+    else if(n > 1024) n = 1024;
+    return (write(fd, ch, n)==n);
 }
 
 bool ceSerial::SetRTS(bool value) {
@@ -275,3 +377,4 @@ bool ceSerial::GetCD(bool& success) {
 }
 
 } // namespace ce 
+

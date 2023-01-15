@@ -48,14 +48,18 @@ private:
 
      /// @todo Не нужно ли сделать поля для всех значений, определяемых при инициализации?
      WAngles<angle_t>curAngles_;
-     adc_t timeoutTime_ = 2000;
+     adc_t timeoutTime_ = 60000;
      angle_t rotateStep_ = 0.3;
      adc_t maxLaserPower_ = 100;
      int counter_ = 1;
 
-     uint16_t SendUart(char commandName, uint16_t parameter = 0);
-     void ReadUart(std::string * readBuffer);
-     uint16_t ParseData(std::string * readBuffer);
+     uint16_t SendUart (char commandName, uint16_t Parameter1, uint16_t Parameter2, uint16_t Parameter3, uint16_t Parameter4, uint16_t Parameter5);
+     uint16_t SendUart (char commandName, uint16_t Parameter1, uint16_t Parameter2, uint16_t Parameter3, uint16_t Parameter4);
+     uint16_t SendUart (char commandName, uint16_t Parameter1, uint16_t Parameter2, uint16_t Parameter3);
+     uint16_t SendUart (char commandName, uint16_t Parameter1, uint16_t Parameter2);
+     uint16_t SendUart (char commandName, uint16_t Parameter1);
+     uint16_t SendUart (char commandName);
+     void ReadUart(ce::Package * packege_);
      uint8_t Crc8(uint8_t *buffer, uint8_t size = 2);
      uint16_t CalcSteps(angle_t angle, angle_t rotateStep);
 

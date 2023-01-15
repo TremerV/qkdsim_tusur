@@ -33,7 +33,7 @@ public:
 
      /// @param [in] timeout Устанавливаемый таймаут ответа.
      /// @return Установленный таймаут ответа.
-     virtual api::AdcResponse SetTimeout(hwe::adc_t timeout) = 0;
+     virtual adc_t SetTimeout(hwe::adc_t timeout) = 0;
 
      /// @param [in] on Устанавливаемое состояние лазера.
      /// @return Установленное состояние лазера.
@@ -81,8 +81,9 @@ public:
      virtual api::AdcResponse GetErrorCode() = 0;
 
      /// @return Таймаут ответа в секундах.
-     virtual api::AdcResponse GetTimeout() = 0;
+     virtual adc_t GetTimeout() = 0;
 };
 
 }
 #endif // ABSTRACTHARDWAREAPI_H
+
