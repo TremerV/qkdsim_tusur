@@ -19,7 +19,7 @@ Conserial::Conserial()
     // Заменяем инициализацию объекта вида "com_("/dev/ttyUSB0", 115200, 8, 'N', 1)",
     // то есть вызов конструктора с параметрами, на задание параметров через методы.
     // Конструктор с параметрами работает так же, но здесь хотя бы примерно понятно, что это за магические числа.
-    com_.SetPort(std::string("/dev/ttyUSB0"));
+    com_.SetPort(std::string("/dev/ttyStandQKD"));
     com_.SetBaudRate(115200);
     com_.SetDataSize(8);
     com_.SetParity('N');
