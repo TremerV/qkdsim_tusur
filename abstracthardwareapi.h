@@ -19,8 +19,7 @@ public:
      virtual ~AbstractHardwareApi() {};
 
      /// @brief Выполняет инициализацию оборудования стенда.
-     /// @return Структура, содержащая информацию о начальных уровнях шумов, начальных положениях волновых пластин,
-     /// максимальном уровне накачки лазера и уровне сигнала при максимальном уровне накачке детекторов.
+     /// @return Структура, содержащая информацию о начальных уровнях шумов, начальных положениях волновых пластин,максимальном уровне накачки лазера и уровне сигнала при максимальном уровне накачке детекторов.
      virtual api::InitResponse Init() = 0;
      virtual api::InitResponse InitByPD() = 0;
      virtual api::InitResponse InitByButtons(WAngles<hwe::angle_t> angles) = 0;
@@ -33,7 +32,7 @@ public:
 
      /// @param [in] timeout Устанавливаемый таймаут ответа.
      /// @return Установленный таймаут ответа.
-     virtual adc_t SetTimeout(hwe::adc_t timeout) = 0;
+     virtual api::AdcResponse SetTimeout(hwe::adc_t timeout) = 0;
 
      /// @param [in] on Устанавливаемое состояние лазера.
      /// @return Установленное состояние лазера.
@@ -81,7 +80,7 @@ public:
      virtual api::AdcResponse GetErrorCode() = 0;
 
      /// @return Таймаут ответа в секундах.
-     virtual adc_t GetTimeout() = 0;
+     virtual api::AdcResponse GetTimeout() = 0;
 };
 
 }
