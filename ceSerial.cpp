@@ -38,11 +38,13 @@ void ceSerial::Delay(unsigned long ms){
 ceSerial::ceSerial()
 {
 	fd = -1;
-	port = "/dev/ttyUSB0";
+    port = "/dev/ttyUSB0";
 	SetBaudRate(9600);
     SetDataSize(8);
 	SetParity('N');
     SetStopBits(1);
+
+
 }
 
 ceSerial::ceSerial(std::string Device, long BaudRate,long DataSize,char ParityType,float NStopBits)
@@ -54,6 +56,7 @@ ceSerial::ceSerial(std::string Device, long BaudRate,long DataSize,char ParityTy
 	SetDataSize(DataSize);
 	SetParity(ParityType);
 	SetStopBits(NStopBits);
+
 }
 
 ceSerial::~ceSerial()
@@ -106,8 +109,8 @@ long ceSerial::Open(void) {
 	settings.c_iflag = 0;
 	settings.c_oflag = 0;
 
-	settings.c_cflag = CREAD | CLOCAL;//see termios.h for more information
-	if(dsize==5)  settings.c_cflag |= CS5;//no change
+    settings.c_cflag = CREAD | CLOCAL;
+    if(dsize==5)  settings.c_cflag |= CS5;
 	else if (dsize == 6)  settings.c_cflag |= CS6;
 	else if (dsize == 7)  settings.c_cflag |= CS7;
 	else settings.c_cflag |= CS8;
@@ -122,7 +125,7 @@ long ceSerial::Open(void) {
 	settings.c_cc[VMIN] = 1;
 	settings.c_cc[VTIME] = 0;
 
-    fd = open(port.c_str(), O_RDWR | O_NONBLOCK);
+    fd = open(port.c_str(), O_RDWR);
 	if (fd == -1) {
 		return -1;
 	}
@@ -132,8 +135,8 @@ long ceSerial::Open(void) {
 	tcsetattr(fd, TCSANOW, &settings);
 
 	int flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    tcflush(fd,TCIOFLUSH);
 	return 0;
 }
 
@@ -192,11 +195,11 @@ long ceSerial::GetBaudRate() {
 	return baudrate;
 }
 
-ce::Package ceSerial:: Read_com(int timeout){
+ce::UartResponse ceSerial:: Read_com(int timeout){
     bool startPackFlag_=false;
     bool flag_ = 0;
-
-    ce::Package pack;
+    uint8_t buffer;
+    ce::UartResponse pack;
     uint8_t currentByte=0;
 
 
@@ -251,7 +254,7 @@ ce::Package ceSerial:: Read_com(int timeout){
             }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
                 break;}
         }
-    }else {return {0,0,0,0,0,0,0,0,0,0,0,0,0};}
+    }else {/*return {0,0,0,0,0,0,0,0,0,0,0,0,0};*/}
 
     pack.param1 = params[1];
     pack.param2 = params[2];
@@ -265,36 +268,31 @@ ce::Package ceSerial:: Read_com(int timeout){
     pack.param10 = params[10];
     return pack ;
 }
-uint16_t ceSerial::ReadChar(bool& success)
+char ceSerial::ReadChar(bool& success)
 {
-	success=false;
-	if (!IsOpened()) {return 0;	}
+    success=false;
+    if (!IsOpened()) {return 0;	}
     success=read(fd, &rxchar, 1)==1;
-	return rxchar;
+    return rxchar;
 }
-std::string ceSerial::ReadChar()
+char ceSerial::ReadChar()
 {
-    if (!IsOpened()) {return "0";}
-    read(fd, &buf, 8);
-    return buf;
+    if (!IsOpened()) {return 0;	}
+    read(fd, &rxchar, 1);
+    return rxchar;
 }
-bool ceSerial::Write(uint16_t *data)
+bool ceSerial::Write(uint8_t data)
 {
-    if (!IsOpened()) {return false;	}
-
-    int n = sizeof(*data);
-    if (n < 0) n = 0;
-    else if(n > 1024) n = 1024;
-    return (write(fd, data,n)==n);
+     if (!IsOpened()) {return false;  }
+     int dataSize = 1;
+     return (write(fd, &data, dataSize)==dataSize);
 }
 
-bool ceSerial::Write(uint8_t *data)
+bool ceSerial::Write(uint16_t data)
 {
-    if (!IsOpened()) {return false;	}
-    long n = sizeof(*data);
-    if (n < 0) n = 0;
-    else if(n > 1024) n = 1024;
-    return (write(fd, data, n)==n);
+     if (!IsOpened()) {return false;  }
+     int dataSize = 2;
+     return (write(fd, &data, dataSize)==dataSize);
 }
 bool ceSerial::Write(char * data)
 {
@@ -315,13 +313,12 @@ bool ceSerial::Write(char *data,long n)
 	return (write(fd, data, n)==n);
 }
 
-bool ceSerial::WriteChar(char *ch)
+bool ceSerial::WriteChar(char ch)
 {
-    if (!IsOpened()) {return false;	}
-    long n = strlen(ch);
-    if (n < 0) n = 0;
-    else if(n > 1024) n = 1024;
-    return (write(fd, ch, n)==n);
+    char s[2];
+    s[0]=ch;
+    s[1]=0;//null terminated
+    return Write(s);
 }
 
 bool ceSerial::SetRTS(bool value) {

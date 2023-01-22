@@ -76,7 +76,7 @@ api::InitResponse Conserial::InitByPD()
     // После установки соединения...
     SendUart(dict_.find("Init")->second); // Посылаем запрос МК
     // Читаем ответ
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем поля структуры
@@ -119,7 +119,7 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
     SendUart(dict_.find("InitByButtons")->second, steps1_, steps2_, steps3_, steps4_); // Посылаем запрос МК
 
     // Читаем ответ
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем поля структуры
@@ -159,7 +159,7 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
     SendUart(dict_.find("RunSelfTest")->second, testId); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     response.adcResponse_ = pack.param1; // Возвращаем целое число
@@ -204,7 +204,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
 
     // Принимаем ответ
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
 
@@ -243,7 +243,7 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
     // Устанавливаем таймаут
     SendUart(dict_.find("SetTimeout")->second, timeout);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     response.adcResponse_ = pack.param1;
@@ -275,7 +275,7 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
     SendUart(dict_.find("SetLaserState")->second, on); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     response.adcResponse_ = pack.param1;
@@ -307,7 +307,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
     SendUart(dict_.find("SetLaserPower")->second, power); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     response.adcResponse_ = pack.param1;
@@ -345,7 +345,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
 
@@ -364,6 +364,153 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
     com_.Close(); // Закрытие соединения
     return response; // Возвращаем, чего там получилось установить
 }
+api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
+{
+    api::WAnglesResponse response; // Структура для формирования ответа
+
+    adc_t steps1_ = CalcSteps(angles.aHalf_,rotateStep_);
+    adc_t steps2_ = CalcSteps(angles.aQuart_,rotateStep_);
+    adc_t steps3_ = CalcSteps(angles.bHalf_,rotateStep_);
+    adc_t steps4_ = CalcSteps(angles.bQuart_,rotateStep_);
+
+    // Открываем соединение с МК
+    if(com_.Open() != 0)
+    {
+        response.errorCode_ = 1; // Не удалось установить соединение
+        return response;
+    }
+
+    // Запросы к МК
+    SendUart(dict_.find("SetPlatesAngles")->second, steps1_, steps2_, steps3_, steps4_);
+
+    // Чтение ответа
+    ce::UartResponse pack;
+    ReadUart(&pack);
+
+    // Заполняем поля
+    response.angles_.aHalf_ = ((float)pack.param1) * rotateStep_;
+    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_;
+    response.angles_.bHalf_ = ((float)pack.param3) * rotateStep_;
+    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
+    response.errorCode_ = 0; // Команда отработала корректно
+
+    com_.Close(); // Закрытие соединения
+    return response; // Возвращаем, чего там получилось установить
+}
+
+api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
+{
+    api::WAnglesResponse response; // Структура для формирования ответа
+
+    adc_t steps1_ = CalcSteps(angles.aHalf_,rotateStep_);
+    adc_t steps2_ = CalcSteps(angles.aQuart_,rotateStep_);
+    adc_t steps3_ = CalcSteps(angles.bHalf_,rotateStep_);
+    adc_t steps4_ = CalcSteps(angles.bQuart_,rotateStep_);
+
+    // Открываем соединение с МК
+    if(com_.Open() != 0)
+    {
+        response.errorCode_ = 1; // Не удалось установить соединение
+        return response;
+    }
+
+    // Запросы к МК
+    SendUart(dict_.find("UpdateBaseAngle")->second, steps1_, steps2_, steps3_, steps4_);
+
+    // Чтение ответа
+    ce::UartResponse pack;
+    ReadUart(&pack);
+
+    // Заполняем поля
+    response.angles_.aHalf_ = ((float)pack.param1) * rotateStep_;
+    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_;
+    response.angles_.bHalf_ = ((float)pack.param3) * rotateStep_;
+    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
+    response.errorCode_ = 0; // Команда отработала корректно
+
+    com_.Close(); // Закрытие соединения
+    return response; // Возвращаем, чего там получилось установить
+}
+api::WAnglesResponse Conserial::ReadBaseAngles()
+{
+    api::WAnglesResponse response; // Структура для формирования ответа
+
+    // Открываем соединение с МК
+    if(com_.Open() != 0)
+    {
+        response.errorCode_ = 1; // Не удалось установить соединение
+        return response;
+    }
+
+
+    // Получаем текущие углы поворота волновых пластин от МК
+    SendUart(dict_.find("ReadBaseAngles")->second);
+
+    ce::UartResponse pack;
+    ReadUart(&pack);
+
+    // Записываем полученное в структуру
+    response.angles_.aHalf_  = ((float)pack.param1) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.angles_.bHalf_  = ((float)pack.param3) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
+    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
+
+    response.errorCode_ = 0;
+
+    com_.Close(); // Закрытие соединения
+    return response;
+}
+
+api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
+{
+    api::AdcResponse response; // Структура для формирования ответа
+
+    // Открываем соединение с МК
+    if(com_.Open() != 0)
+    {
+        response.errorCode_ = 1; // Не удалось установить соединение
+        return response;
+    }
+
+    // После установки соединения...
+    SendUart(dict_.find("ReadEEPROM")->second, numberUnit_); // Запрос МК
+
+    // Чтение ответа
+    ce::UartResponse pack;
+    ReadUart(&pack);
+
+    // Заполняем поля для ответа
+    response.adcResponse_ = pack.param1;
+    response.errorCode_ = 0;
+
+    com_.Close(); // Закрытие соединения
+    return response; // Возвращаем полученное состояние
+}
+api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
+{
+    api::AdcResponse response; // Структура для формирования ответа
+
+    // Открываем соединение с МК
+    if(com_.Open() != 0)
+    {
+        response.errorCode_ = 1; // Не удалось установить соединение
+        return response;
+    }
+
+    // После установки соединения...
+    SendUart(dict_.find("WriteEEPROM")->second, numberUnit_, param_); // Запрос МК
+
+    // Чтение ответа
+    ce::UartResponse pack;
+    ReadUart(&pack);
+
+    // Заполняем поля для ответа
+    response.adcResponse_ = pack.param1;
+    response.errorCode_ = 0;
+
+    com_.Close(); // Закрытие соединения
+    return response; // Возвращаем полученное состояние
+}
 
 api::AdcResponse Conserial::GetLaserState()
 {
@@ -381,7 +528,7 @@ api::AdcResponse Conserial::GetLaserState()
     SendUart(dict_.find("GetLaserState")->second); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем поля для ответа
@@ -408,7 +555,7 @@ api::AdcResponse Conserial::GetLaserPower()
     SendUart(dict_.find("GetLaserPower")->second); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем поля для ответа
@@ -433,7 +580,7 @@ api::AdcResponse Conserial::GetMaxLaserPower()
     // После установки соединения...
     SendUart(dict_.find("GetMaxLaserPower")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем поля для ответа
@@ -458,7 +605,7 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
     // Получаем начальные углы поворота волновых пластин от МК
     SendUart(dict_.find("GetStartPlatesAngles")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Записываем полученное в структуру
@@ -489,7 +636,7 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
     // Получаем текущие углы поворота волновых пластин от МК
     SendUart(dict_.find("GetCurPlatesAngles")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Записываем полученное в структуру
@@ -518,7 +665,7 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
     // получаем от МК начальные уровни засветки
     SendUart(dict_.find("GetStartLightNoises")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем структуру
@@ -544,7 +691,7 @@ api::SLevelsResponse Conserial::GetSignalLevels()
 
     SendUart(dict_.find("GetSignalLevel")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем структуру для ответа
@@ -569,7 +716,7 @@ api::AngleResponse Conserial::GetRotateStep()
     }
 
     SendUart(dict_.find("GetRotateStep")->second);
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Получаем от МК количество шагов для поворота на 360 градусов
@@ -596,7 +743,7 @@ api::SLevelsResponse Conserial::GetLightNoises()
     SendUart(dict_.find("GetLightNoises")->second); // Запрос МУ
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     // Заполняем структуру для ответа
@@ -624,7 +771,7 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
     SendUart(dict_.find("GetMaxSignalLevel")->second); // Запрос МК
 
     // Чтение ответа
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
 
@@ -650,7 +797,7 @@ api::AdcResponse Conserial::GetErrorCode()
     // После установки соединения
     SendUart(dict_.find("GetErrorCode")->second);
 
-    ce::Package pack;
+    ce::UartResponse pack;
     ReadUart(&pack);
 
     response.adcResponse_ = pack.param1;
@@ -672,7 +819,7 @@ api::AdcResponse Conserial::GetTimeout()
         // После установки соединения
         SendUart(dict_.find("GetTimeout")->second);
 
-        ce::Package pack;
+        ce::UartResponse pack;
         ReadUart(&pack);
 
         response.adcResponse_ = pack.param1;
@@ -692,16 +839,16 @@ uint16_t Conserial:: SendUart (char commandName){
     uint16_t end = 65535;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
 
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
-    com_.Write(&end);
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t)commandName);
+    com_.Write(crc);
+    com_.Write(end);
     return 1;
 }
 uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1 ){
@@ -712,25 +859,25 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1 ){
     uint8_t null = 0;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName + Parameter1;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
 
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t )commandName);
+    com_.Write(crc);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
         uint8_t a2 = Parameter1 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter1);}
-    com_.Write(&end);
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter1);}
+    com_.Write(end);
     return 1;
 }
 
@@ -742,35 +889,35 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t null = 0;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName + Parameter1 + Parameter2;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
 
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t)commandName);
+    com_.Write(crc);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
         uint8_t a2 = Parameter1 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter1);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter1);}
 
     if (Parameter2>=256){
         uint8_t a1 = Parameter2 / 256;
         uint8_t a2 = Parameter2 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter2);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter2);}
 
-    com_.Write(&end);
+    com_.Write(end);
     return 1;
 }
 
@@ -782,43 +929,43 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t null = 0;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t )commandName);
+    com_.Write(crc);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
         uint8_t a2 = Parameter1 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter1);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter1);}
 
     if (Parameter2>=256){
         uint8_t a1 = Parameter2 / 256;
         uint8_t a2 = Parameter2 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter2);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter2);}
 
     if (Parameter3>=256){
         uint8_t a1 = Parameter3 / 256;
         uint8_t a2 = Parameter3 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter3);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter3);}
 
-    com_.Write(&end);
+    com_.Write(end);
     return 1;
 }
 
@@ -830,52 +977,52 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t null = 0;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3 + Parameter4;
-    crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
+    crc = Crc8((uint8_t *) &tempData_, sizeof(tempData_));
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t )commandName);
+    com_.Write(crc);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
         uint8_t a2 = Parameter1 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter1);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter1);}
 
     if (Parameter2>=256){
         uint8_t a1 = Parameter2 / 256;
         uint8_t a2 = Parameter2 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter2);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter2);}
 
     if (Parameter3>=256){
         uint8_t a1 = Parameter3 / 256;
         uint8_t a2 = Parameter3 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter3);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter3);}
 
     if (Parameter4>=256){
         uint8_t a1 = Parameter4 / 256;
         uint8_t a2 = Parameter4 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter4);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter4);}
 
-    com_.Write(&end);
+    com_.Write(end);
     return 1;
 }
 
@@ -887,79 +1034,74 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t null = 0;
     uint8_t crc;
 
-    unsigned int tempData_=0;
+    uint16_t tempData_=0;
 
     tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3 + Parameter4 + Parameter5;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
-    com_.Write(&start1);
-    com_.Write(&start2);
-    com_.Write(&status);
-    com_.Write((uint8_t *)&commandName);
-    com_.Write(&crc);
+    com_.Write(start1);
+    com_.Write(start2);
+    com_.Write(status);
+    com_.Write((uint8_t )commandName);
+    com_.Write(crc);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
         uint8_t a2 = Parameter1 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter1);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter1);}
 
     if (Parameter2>=256){
         uint8_t a1 = Parameter2 / 256;
         uint8_t a2 = Parameter2 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter2);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter2);}
 
     if (Parameter3>=256){
         uint8_t a1 = Parameter3 / 256;
         uint8_t a2 = Parameter3 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter3);}
+        com_.Write(null);
+        com_.Write((uint8_t ) Parameter3);}
 
     if (Parameter4>=256){
         uint8_t a1 = Parameter4 / 256;
         uint8_t a2 = Parameter4 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter4);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter4);}
 
     if (Parameter5>=256){
         uint8_t a1 = Parameter5 / 256;
         uint8_t a2 = Parameter5 % 256;
-        com_.Write(&a1);
-        com_.Write(&a2);
+        com_.Write(a1);
+        com_.Write(a2);
     }else{
-        com_.Write(&null);
-        com_.Write((uint8_t *) &Parameter5);}
+        com_.Write(null);
+        com_.Write((uint8_t) Parameter5);}
 
-    com_.Write(&end);
+    com_.Write(end);
     return 1;
 }
 
 //Функция чтения по Uart
-void Conserial::ReadUart(ce::Package * packege_)
-{   ce::Package pack;
+void Conserial::ReadUart(ce::UartResponse * packege_)
+{   ce::UartResponse pack;
 
     pack = com_.Read_com(timeoutTime_);
-    int temp = pack.nameCommand_ + pack.param1 + pack.param2 + pack.param3 + pack.param4 + pack.param5 + pack.param6 + pack.param7 + pack.param8+ pack.param9+ pack.param10;
-    uint8_t crc = Crc8((uint8_t *)&temp, sizeof(temp));
-//    cout<< std::bitset<8>(crc)<<endl;
-//    if (crc == pack.crc_){ * packege_ = pack;}
-//    else{   cout<< "WrongCheckSum"<<endl; }
-    *packege_ = pack;
- //   cout<<  packege_->nameCommand_<<endl;
-//    cout<< std::bitset<8>(packege_->crc_)<<endl;
-
+    uint16_t temp = pack.nameCommand_ + pack.param1 + pack.param2 + pack.param3 + pack.param4 + pack.param5 + pack.param6 + pack.param7 + pack.param8+ pack.param9+ pack.param10;
+    uint8_t crc = Crc8((uint8_t*)&temp,sizeof(temp));
+    if (crc == pack.crc_){ * packege_ = pack;}
+    else{   cout<< "WrongCheckSum"<<endl; }
     cout<< "Имя: " << pack.nameCommand_<<endl;
     cout<< "параметр 1: " <<(uint16_t)pack.param1<<endl;
     cout<< "параметр 2: " <<(uint16_t)pack.param2<<endl;
@@ -971,20 +1113,16 @@ void Conserial::ReadUart(ce::Package * packege_)
     cout<< "параметр 8: " <<(uint16_t)pack.param8<<endl;
     cout<< "параметр 9: " << (uint16_t)pack.param9<<endl;
     cout<< "параметр 10: " <<(uint16_t)pack.param10<<endl;
-
 }
 
 
 // Функция подсчёта контрольной суммы
-uint8_t Conserial::Crc8(uint8_t *buffer, uint8_t size) {
-    uint8_t crc = 0;
-    for (uint8_t i = 0; i < size ; i++) {
-        uint8_t data = buffer[i];
-        for (int j = 8; j > 0; j--) {
-            crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
-            data >>= 1;
-        }
-    }
+uint8_t Conserial::Crc8(uint8_t *pcBlock, uint8_t len)
+{
+    uint8_t crc = 0xFF;
+
+    while (len--)
+        crc = Crc8Table[crc ^ *pcBlock++];
 
     return crc;
 }
