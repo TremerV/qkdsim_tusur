@@ -24,6 +24,9 @@ Conserial::Conserial()
     com_.SetDataSize(8);
     com_.SetParity('N');
     com_.SetStopBits(1);
+    com_.Open();
+    com_.Close();
+    com_.Open();
 }
 
 Conserial::~Conserial()
@@ -67,8 +70,11 @@ api::InitResponse Conserial::InitByPD()
     api::InitResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -96,7 +102,6 @@ api::InitResponse Conserial::InitByPD()
     response.errorCode_ = 0; // Команда отработала корректно
 
     curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
-    com_.Close(); // Закрываем соединение
     return response; // Возвращаем сформированный ответ
 }
 
@@ -105,11 +110,15 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
     api::InitResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
+
     int steps1_ = round(fmod(angles.aHalf_,360)/rotateStep_);
     int steps2_ = round(fmod(angles.aQuart_,360)/rotateStep_);
     int steps3_ = round(fmod(angles.bHalf_,360)/rotateStep_);
@@ -139,7 +148,6 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
     response.errorCode_ = 0; // Команда отработала корректно
 
     curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
-    com_.Close(); // Закрываем соединение
     return response; // Возвращаем сформированный ответ
 }
 
@@ -148,11 +156,13 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
-
     }
 
     // После установки соединения...
@@ -165,24 +175,11 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
     response.adcResponse_ = pack.param1; // Возвращаем целое число
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
 api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t power)
 {
-
-    // Запомнили состояние лазера
-    // Повернули пластинки
-    // Вычислили шумы
-    // Включили и установили лазер на нужный уровень мощности
-    // Получили уровни сигналов
-    // Выключаем лазер, если нужно
-
-    // ЛИБО
-    // Просим всё это сделать МК
-
-
     api::SendMessageResponse response; // Структура для формирования ответа
 
 
@@ -192,8 +189,11 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
     adc_t steps4 = CalcSteps(angles.bQuart_,rotateStep_);
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -224,7 +224,6 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
     curAngles_ = response.newPlatesAngles_; // Запомнили текущие значения углов
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -232,10 +231,12 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
 {
     api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
 
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
-        // Не удалось установить соединение
-        response.errorCode_ = 1;
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
+        response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
 
@@ -249,7 +250,7 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
     timeoutTime_ = response.adcResponse_ ;
-    com_.Close(); // Закрываем соединение
+
     return response;
 }
 
@@ -259,13 +260,17 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
 
     if(on != 1 && on != 0)
     {
+        cout<<"Введено некорректное значение параметра";
         response.errorCode_ = 2; // Принят некорректный входной параметр
         return response;
     }
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -281,7 +286,6 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем значение, соответствующее установленному состоянию
 }
 
@@ -296,8 +300,11 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
     }
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -313,7 +320,6 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем значение, соответствующее установленному уровню
 }
 
@@ -334,8 +340,11 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
     Steps = CalcSteps(angle,rotateStep_); //Подсчёт и округление шагов
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -361,7 +370,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
     case 3: curAngles_.bHalf_ = response.angle_; break;
     case 4: curAngles_.bQuart_= response.angle_; break;
     }
-    com_.Close(); // Закрытие соединения
+
     return response; // Возвращаем, чего там получилось установить
 }
 api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
@@ -374,8 +383,11 @@ api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
     adc_t steps4_ = CalcSteps(angles.bQuart_,rotateStep_);
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -394,7 +406,6 @@ api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
     response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем, чего там получилось установить
 }
 
@@ -408,8 +419,11 @@ api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
     adc_t steps4_ = CalcSteps(angles.bQuart_,rotateStep_);
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -428,7 +442,6 @@ api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
     response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем, чего там получилось установить
 }
 api::WAnglesResponse Conserial::ReadBaseAngles()
@@ -436,8 +449,11 @@ api::WAnglesResponse Conserial::ReadBaseAngles()
     api::WAnglesResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -457,7 +473,6 @@ api::WAnglesResponse Conserial::ReadBaseAngles()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -466,8 +481,11 @@ api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -483,7 +501,6 @@ api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем полученное состояние
 }
 api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
@@ -491,8 +508,11 @@ api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -508,7 +528,6 @@ api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем полученное состояние
 }
 
@@ -517,8 +536,11 @@ api::AdcResponse Conserial::GetLaserState()
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -535,7 +557,6 @@ api::AdcResponse Conserial::GetLaserState()
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем полученное состояние
 }
 
@@ -544,8 +565,11 @@ api::AdcResponse Conserial::GetLaserPower()
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -562,7 +586,6 @@ api::AdcResponse Conserial::GetLaserPower()
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем полученное состояние
 }
 
@@ -571,8 +594,11 @@ api::AdcResponse Conserial::GetMaxLaserPower()
     api::AdcResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -587,7 +613,6 @@ api::AdcResponse Conserial::GetMaxLaserPower()
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response; // Возвращаем полученное состояние
 }
 
@@ -596,8 +621,11 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
     api::WAnglesResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -616,7 +644,6 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     // возвращаем структуру
     return response;
 }
@@ -626,8 +653,11 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
     api::WAnglesResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -647,7 +677,6 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -656,12 +685,14 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
     api::SLevelsResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
-
     // получаем от МК начальные уровни засветки
     SendUart(dict_.find("GetStartLightNoises")->second);
 
@@ -674,7 +705,6 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -683,8 +713,11 @@ api::SLevelsResponse Conserial::GetSignalLevels()
     api::SLevelsResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -700,7 +733,6 @@ api::SLevelsResponse Conserial::GetSignalLevels()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -709,8 +741,11 @@ api::AngleResponse Conserial::GetRotateStep()
     api::AngleResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -725,7 +760,6 @@ api::AngleResponse Conserial::GetRotateStep()
     if(steps_!=0){  rotateStep_ = 360.0 / steps_;}
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрытие соединения
     return response;
 }
 
@@ -734,8 +768,11 @@ api::SLevelsResponse Conserial::GetLightNoises()
     api::SLevelsResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -753,7 +790,6 @@ api::SLevelsResponse Conserial::GetLightNoises()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрываем соединение
     return response;
 }
 
@@ -762,8 +798,11 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
     api::SLevelsResponse response; // Структура для формирования ответа
 
     // Открываем соединение с МК
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
@@ -780,17 +819,18 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
 
     response.errorCode_ = 0;
 
-    com_.Close(); // Закрываем соединение
     return response;
 }
 
 api::AdcResponse Conserial::GetErrorCode()
 {
     api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
-    if(com_.Open() != 0)
+    if(!com_.IsOpened())
     {
-        // Не удалось установить соединение
-        response.errorCode_ = 1;
+        com_.Open();
+        if(!com_.IsOpened())
+        cout<<"Проверьте соединение со стендом"<<endl;
+        response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
 
@@ -803,16 +843,17 @@ api::AdcResponse Conserial::GetErrorCode()
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
 
-    com_.Close(); // Закрываем соединение
     return response;
 }
 
 api::AdcResponse Conserial::GetTimeout()
 {       api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
-        if(com_.Open() != 0)
+        if(!com_.IsOpened())
         {
-            // Не удалось установить соединение
-            response.errorCode_ = 1;
+            com_.Open();
+            if(!com_.IsOpened())
+            cout<<"Проверьте соединение со стендом"<<endl;
+            response.errorCode_ = 1; // Не удалось установить соединение
             return response;
         }
 
@@ -825,7 +866,7 @@ api::AdcResponse Conserial::GetTimeout()
         response.adcResponse_ = pack.param1;
         response.errorCode_ = 0; // Команда отработала корректно
         timeoutTime_  = response.adcResponse_;
-        com_.Close(); // Закрываем соединение
+
         return response;
 }
 std::ostream& operator<< (std::ostream& os, std::byte b) {
@@ -842,7 +883,6 @@ uint16_t Conserial:: SendUart (char commandName){
     uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
-
     com_.Write(start1);
     com_.Write(start2);
     com_.Write(status);
@@ -858,7 +898,6 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1 ){
     uint16_t end = 65535;
     uint8_t null = 0;
     uint8_t crc;
-
     uint16_t tempData_=0;
     tempData_ = (uint8_t) commandName + Parameter1;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
