@@ -51,9 +51,8 @@ public:
 private:
      ce::ceSerial com_; // Обект класса для соединения с МК
 
-     /// @todo Не нужно ли сделать поля для всех значений, определяемых при инициализации?
      WAngles<angle_t>curAngles_;
-     adc_t timeoutTime_ = 60000;
+     adc_t timeoutTime_ = 1; //sec
      angle_t rotateStep_ = 0.3;
      adc_t maxLaserPower_ = 100;
 
@@ -65,6 +64,7 @@ private:
      uint16_t SendUart (char commandName);
      uint8_t Crc8(uint8_t *pcBlock, uint8_t len);
      void ReadUart(ce::UartResponse * packege_);
+
      const uint8_t Crc8Table[256] = {
          0x00, 0x31, 0x62, 0x53, 0xC4, 0xF5, 0xA6, 0x97,
          0xB9, 0x88, 0xDB, 0xEA, 0x7D, 0x4C, 0x1F, 0x2E,

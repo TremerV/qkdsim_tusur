@@ -16,9 +16,6 @@ namespace hwe
 
 Conserial::Conserial()
 {
-    // Заменяем инициализацию объекта вида "com_("/dev/ttyUSB0", 115200, 8, 'N', 1)",
-    // то есть вызов конструктора с параметрами, на задание параметров через методы.
-    // Конструктор с параметрами работает так же, но здесь хотя бы примерно понятно, что это за магические числа.
     com_.SetPort(std::string("/dev/ttyStandQKD"));
     com_.SetBaudRate(115200);
     com_.SetDataSize(8);
@@ -31,6 +28,7 @@ Conserial::Conserial()
 
 Conserial::~Conserial()
 { }
+
 api:: InitResponse Conserial:: Init()
 {
     api::InitResponse response; // Структура для формирования ответа
@@ -81,6 +79,7 @@ api::InitResponse Conserial::InitByPD()
 
     // После установки соединения...
     SendUart(dict_.find("Init")->second); // Посылаем запрос МК
+
     // Читаем ответ
     ce::UartResponse pack;
     ReadUart(&pack);
@@ -230,7 +229,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 api::AdcResponse Conserial::SetTimeout(adc_t timeout)
 {
     api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
-
+    if (timeout == 0){ return {0,2};}
     if(!com_.IsOpened())
     {
         com_.Open();
@@ -373,6 +372,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
     return response; // Возвращаем, чего там получилось установить
 }
+
 api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
 {
     api::WAnglesResponse response; // Структура для формирования ответа
@@ -444,6 +444,7 @@ api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
 
     return response; // Возвращаем, чего там получилось установить
 }
+
 api::WAnglesResponse Conserial::ReadBaseAngles()
 {
     api::WAnglesResponse response; // Структура для формирования ответа
@@ -503,6 +504,7 @@ api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
 
     return response; // Возвращаем полученное состояние
 }
+
 api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
 {
     api::AdcResponse response; // Структура для формирования ответа
@@ -637,7 +639,7 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
     ReadUart(&pack);
 
     // Записываем полученное в структуру
-    response.angles_.aHalf_  = ((float)pack.param1) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.angles_.aHalf_  = ((float)pack.param1) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
     response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
     response.angles_.bHalf_  = ((float)pack.param3) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
     response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
@@ -755,9 +757,9 @@ api::AngleResponse Conserial::GetRotateStep()
     ReadUart(&pack);
 
     // Получаем от МК количество шагов для поворота на 360 градусов
-    // Считаем сколько градусов в одном шаге
     float steps_ = pack.param1;
-    if(steps_!=0){  rotateStep_ = 360.0 / steps_;}
+    if(steps_!=0){  rotateStep_ = 360.0 / steps_;} // Считаем сколько градусов в одном шаге
+    response.angle_= rotateStep_;
     response.errorCode_ = 0;
 
     return response;
@@ -869,9 +871,7 @@ api::AdcResponse Conserial::GetTimeout()
 
         return response;
 }
-std::ostream& operator<< (std::ostream& os, std::byte b) {
-    return os << std::bitset<8>(std::to_integer<int>(b));
-}
+
 //Функция передачи по uart
 uint16_t Conserial:: SendUart (char commandName){
     uint8_t start1 = 255;
@@ -1138,22 +1138,10 @@ void Conserial::ReadUart(ce::UartResponse * packege_)
 
     pack = com_.Read_com(timeoutTime_);
     uint16_t temp = pack.nameCommand_ + pack.param1 + pack.param2 + pack.param3 + pack.param4 + pack.param5 + pack.param6 + pack.param7 + pack.param8+ pack.param9+ pack.param10;
-    uint8_t crc = Crc8((uint8_t*)&temp,sizeof(temp));
+    uint8_t crc = Crc8((uint8_t*)&temp, sizeof(temp));
     if (crc == pack.crc_){ * packege_ = pack;}
     else{   cout<< "WrongCheckSum"<<endl; }
-    cout<< "Имя: " << pack.nameCommand_<<endl;
-    cout<< "параметр 1: " <<(uint16_t)pack.param1<<endl;
-    cout<< "параметр 2: " <<(uint16_t)pack.param2<<endl;
-    cout<< "параметр 3: " <<(uint16_t)pack.param3<<endl;
-    cout<< "параметр 4: " <<(uint16_t)pack.param4<<endl;
-    cout<< "параметр 5: " <<(uint16_t)pack.param5<<endl;
-    cout<< "параметр 6: " <<(uint16_t)pack.param6<<endl;
-    cout<< "параметр 7: " <<(uint16_t)pack.param7<<endl;
-    cout<< "параметр 8: " <<(uint16_t)pack.param8<<endl;
-    cout<< "параметр 9: " << (uint16_t)pack.param9<<endl;
-    cout<< "параметр 10: " <<(uint16_t)pack.param10<<endl;
 }
-
 
 // Функция подсчёта контрольной суммы
 uint8_t Conserial::Crc8(uint8_t *pcBlock, uint8_t len)

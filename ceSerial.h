@@ -33,13 +33,13 @@ struct UartResponse{
     };
 
 class ceSerial {
-    uint16_t rxchar;
-	std::string port;
-	long baud;
-	long dsize;
-	char parity;
-	float stopbits;
-    long fd;//serial_fd
+    uint16_t rxchar_;
+    std::string port_;
+    long baud_;
+    long dsize_;
+    char parity_;
+    float stopbits_;
+    long fd_; //serial_fd
 
 
 public:
@@ -51,11 +51,11 @@ public:
 	void Close();
     char ReadChar();
     char ReadChar(bool& success);//return read char if success
-    ce::UartResponse Read_com(int timeout);
-    bool WriteChar(char ch);////return success flag
-    bool Write(uint16_t data);//write null terminated string and return success flag
+    ce::UartResponse Read_com(uint16_t timeout);
+    bool WriteChar(char ch);    //return success flag
+    bool Write(uint16_t data);
     bool Write(uint8_t data);
-    bool Write(char * data);
+    bool Write(char * data);//write null terminated string and return success flag
 	bool Write(char *data,long n);
 	bool SetRTS(bool value);//return success flag
 	bool SetDTR(bool value);//return success flag
