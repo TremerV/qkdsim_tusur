@@ -34,16 +34,16 @@ using namespace std;
 namespace ce {
 
 void ceSerial::Delay(unsigned long ms){
-	usleep(ms*1000);
+    usleep(ms*1000);
 }
 
 ceSerial::ceSerial()
 {
     fd_ = -1;
     port_ = "/dev/ttyUSB0";
-	SetBaudRate(9600);
+    SetBaudRate(9600);
     SetDataSize(8);
-	SetParity('N');
+    SetParity('N');
     SetStopBits(1);
 
 
@@ -54,16 +54,16 @@ ceSerial::ceSerial(std::string Device, long BaudRate,long DataSize,char ParityTy
 
     fd_ = -1;
     port_ = Device;
-	SetBaudRate(BaudRate);
-	SetDataSize(DataSize);
-	SetParity(ParityType);
-	SetStopBits(NStopBits);
+    SetBaudRate(BaudRate);
+    SetDataSize(DataSize);
+    SetParity(ParityType);
+    SetStopBits(NStopBits);
 
 }
 
 ceSerial::~ceSerial()
 {
-	Close();
+    Close();
 }
 
 void ceSerial::SetPort(std::string Device) {
@@ -75,7 +75,7 @@ std::string ceSerial::GetPort() {
 }
 
 void ceSerial::SetDataSize(long nbits) {
-	if ((nbits < 5) || (nbits > 8)) nbits = 8;
+    if ((nbits < 5) || (nbits > 8)) nbits = 8;
     dsize_=nbits;
 }
 
@@ -84,10 +84,10 @@ long ceSerial::GetDataSize() {
 }
 
 void ceSerial::SetParity(char p) {
-	if ((p != 'N') && (p != 'E') && (p != 'O')) 
-	{
-		p = 'N';
-	}
+    if ((p != 'N') && (p != 'E') && (p != 'O'))
+    {
+        p = 'N';
+    }
     parity_ = p;
 }
 
@@ -106,16 +106,16 @@ float ceSerial::GetStopBits() {
 
 long ceSerial::Open(void) {
 
-	struct termios settings;
-	memset(&settings, 0, sizeof(settings));
-	settings.c_iflag = 0;
-	settings.c_oflag = 0;
+    struct termios settings;
+    memset(&settings, 0, sizeof(settings));
+    settings.c_iflag = 0;
+    settings.c_oflag = 0;
 
     settings.c_cflag = CREAD | CLOCAL;
     if(dsize_==5)  settings.c_cflag |= CS5;
     else if (dsize_ == 6)  settings.c_cflag |= CS6;
     else if (dsize_ == 7)  settings.c_cflag |= CS7;
-	else settings.c_cflag |= CS8;
+    else settings.c_cflag |= CS8;
 
     if(stopbits_==2) settings.c_cflag |= CSTOPB;
 
@@ -123,13 +123,13 @@ long ceSerial::Open(void) {
 
     if (parity_ == 'O') settings.c_cflag |= PARODD;
 
-	settings.c_lflag = 0;
-	settings.c_cc[VMIN] = 1;
-	settings.c_cc[VTIME] = 0;
+    settings.c_lflag = 0;
+    settings.c_cc[VMIN] = 1;
+    settings.c_cc[VTIME] = 0;
     fd_ = open(port_.c_str(), O_RDWR | O_NONBLOCK);
     if (fd_ == -1) {
-		return -1;
-	}
+        return -1;
+    }
     cfsetospeed(&settings, baud_);
     cfsetispeed(&settings, baud_);
 
@@ -138,7 +138,7 @@ long ceSerial::Open(void) {
     int flags = fcntl(fd_, F_GETFL);
     fcntl(fd_, F_SETFL, flags| O_RDWR | O_NONBLOCK);
     tcflush(fd_,TCIOFLUSH);
-	return 0;
+    return 0;
 }
 
 void ceSerial::Close() {
@@ -149,7 +149,7 @@ void ceSerial::Close() {
 bool ceSerial::IsOpened()
 {
     if(fd_== (-1)) return false;
-	else return true;
+    else return true;
 }
 
 void ceSerial::SetBaudRate(long baudrate) {
@@ -174,7 +174,7 @@ void ceSerial::SetBaudRate(long baudrate) {
 }
 
 long ceSerial::GetBaudRate() {
-	long baudrate=9600;
+    long baudrate=9600;
     if (baud_ < B50) baudrate = 0;
     else if (baud_ < B75) baudrate = 50;
     else if (baud_ < B110) baudrate = 75;
@@ -192,8 +192,8 @@ long ceSerial::GetBaudRate() {
     else if (baud_ < B57600) baudrate = 38400;
     else if (baud_ < B115200) baudrate = 57600;
     else if (baud_ < B230400) baudrate = 115200;
-	else baudrate = 230400;
-	return baudrate;
+    else baudrate = 230400;
+    return baudrate;
 }
 
 ce::UartResponse ceSerial:: Read_com(uint16_t timeout){
@@ -202,7 +202,7 @@ ce::UartResponse ceSerial:: Read_com(uint16_t timeout){
     uint8_t buffer = 0;
     ce::UartResponse pack_;
     uint8_t currentByte_=0;
-    timeout = timeout * 1000; //перевод в мсек
+    timeout = timeout *1000;
 
 
     if (!IsOpened()) {std::cout<< "Проверьте соединение со стендом"<<std::endl;
@@ -286,6 +286,7 @@ char ceSerial::ReadChar()
 bool ceSerial::Write(uint8_t data)
 {
      if (!IsOpened()) {return false;  }
+     tcflush(fd_,TCIFLUSH);
      int dataSize = 1;
      return (write(fd_, &data, dataSize)==dataSize);
 }
@@ -293,12 +294,14 @@ bool ceSerial::Write(uint8_t data)
 bool ceSerial::Write(uint16_t data)
 {
      if (!IsOpened()) {return false;  }
+     tcflush(fd_,TCIFLUSH);
      int dataSize = 2;
      return (write(fd_, &data, dataSize)==dataSize);
 }
 bool ceSerial::Write(char * data)
 {
     if (!IsOpened()) {return false;	}
+    tcflush(fd_,TCIFLUSH);
     long n = strlen(data);
     if (n < 0) n = 0;
     else if(n > 1024) n = 1024;
@@ -307,9 +310,10 @@ bool ceSerial::Write(char * data)
 
 bool ceSerial::Write(char *data,long n)
 {
-	if (!IsOpened()) {return false;	}
-	if (n < 0) n = 0;
-	else if(n > 1024) n = 1024;
+    if (!IsOpened()) {return false;	}
+    tcflush(fd_,TCIFLUSH);
+    if (n < 0) n = 0;
+    else if(n > 1024) n = 1024;
     return (write(fd_, data, n)==n);
 }
 
@@ -322,56 +326,55 @@ bool ceSerial::WriteChar(char ch)
 }
 
 bool ceSerial::SetRTS(bool value) {
-	long RTS_flag = TIOCM_RTS;
-	bool success=true;
-	if (value) {//Set RTS pin
+    long RTS_flag = TIOCM_RTS;
+    bool success=true;
+    if (value) {//Set RTS pin
         if (ioctl(fd_, TIOCMBIS, &RTS_flag) == -1) success=false;
-	}
-	else {//Clear RTS pin
+    }
+    else {//Clear RTS pin
         if (ioctl(fd_, TIOCMBIC, &RTS_flag) == -1) success=false;
-	}
-	return success;
+    }
+    return success;
 }
 
 bool ceSerial::SetDTR(bool value) {
-	long DTR_flag = TIOCM_DTR;
-	bool success=true;
-	if (value) {//Set DTR pin
+    long DTR_flag = TIOCM_DTR;
+    bool success=true;
+    if (value) {//Set DTR pin
         if (ioctl(fd_, TIOCMBIS, &DTR_flag) == -1) success=false;
-	}
-	else {//Clear DTR pin
+    }
+    else {//Clear DTR pin
         if (ioctl(fd_, TIOCMBIC, &DTR_flag) == -1) success=false;
-	}
-	return success;
+    }
+    return success;
 }
 
 bool ceSerial::GetCTS(bool& success) {
-	success=true;
-	long status;
+    success=true;
+    long status;
     if(ioctl(fd_, TIOCMGET, &status)== -1) success=false;
-	return ((status & TIOCM_CTS) != 0);
+    return ((status & TIOCM_CTS) != 0);
 }
 
 bool ceSerial::GetDSR(bool& success) {
-	success=true;
-	long status;
+    success=true;
+    long status;
     if(ioctl(fd_, TIOCMGET, &status)== -1) success=false;
-	return ((status & TIOCM_DSR) != 0);
+    return ((status & TIOCM_DSR) != 0);
 }
 
 bool ceSerial::GetRI(bool& success) {
-	success=true;
-	long status;
+    success=true;
+    long status;
     if(ioctl(fd_, TIOCMGET, &status)== -1) success=false;
-	return ((status & TIOCM_RI) != 0);
+    return ((status & TIOCM_RI) != 0);
 }
 
 bool ceSerial::GetCD(bool& success) {
-	success=true;
-	long status;
+    success=true;
+    long status;
     if(ioctl(fd_, TIOCMGET, &status)== -1) success=false;
-	return ((status & TIOCM_CD) != 0);
+    return ((status & TIOCM_CD) != 0);
 }
 
-} // namespace ce 
-
+} // namespace ce
