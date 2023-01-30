@@ -202,6 +202,7 @@ ce::UartResponse ceSerial:: Read_com(uint16_t timeout){
     uint8_t buffer = 0;
     ce::UartResponse pack_;
     uint8_t currentByte_=0;
+    timeout = timeout * 1000; //перевод в мсек
 
 
     if (!IsOpened()) {std::cout<< "Проверьте соединение со стендом"<<std::endl;
