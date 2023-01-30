@@ -52,7 +52,7 @@ private:
      ce::ceSerial com_; // Обект класса для соединения с МК
 
      WAngles<angle_t>curAngles_;
-     adc_t timeoutTime_ = 1; //sec
+     adc_t timeoutTime_ = 60; //sec
      angle_t rotateStep_ = 0.3;
      adc_t maxLaserPower_ = 100;
 
