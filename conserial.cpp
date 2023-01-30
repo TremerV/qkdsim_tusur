@@ -229,7 +229,7 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 api::AdcResponse Conserial::SetTimeout(adc_t timeout)
 {
     api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
-    if (timeout == 0){ return {0,2};}
+    if (timeout <= 0){ return {0,2};}
     if(!com_.IsOpened())
     {
         com_.Open();
