@@ -66,6 +66,9 @@ api:: InitResponse Conserial:: Init()
 api::InitResponse Conserial::InitByPD()
 {
     api::InitResponse response; // Структура для формирования ответа
+    uint16_t tempTimeOut_ = 600;
+    uint16_t tempData = timeoutTime_;
+    timeoutTime_ = tempTimeOut_;
 
     // Открываем соединение с МК
     if(!com_.IsOpened())
@@ -84,6 +87,8 @@ api::InitResponse Conserial::InitByPD()
     ce::UartResponse pack;
     ReadUart(&pack);
 
+
+
     // Заполняем поля структуры
     response.startPlatesAngles_.aHalf_  = ((float) pack.param1) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
     response.startPlatesAngles_.aQuart_ = ((float) pack.param2) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
@@ -101,6 +106,7 @@ api::InitResponse Conserial::InitByPD()
     response.errorCode_ = 0; // Команда отработала корректно
 
     curAngles_ = response.startPlatesAngles_; // Сохраняем текущее значение углов на будущее
+    timeoutTime_ = tempData;
     return response; // Возвращаем сформированный ответ
 }
 
@@ -163,7 +169,8 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
-
+    //Заглушка до доработки прошивки на МК
+    /*
     // После установки соединения...
     SendUart(dict_.find("RunSelfTest")->second, testId); // Запрос МК
 
@@ -173,7 +180,8 @@ api::AdcResponse Conserial::RunTest(adc_t testId)
 
     response.adcResponse_ = pack.param1; // Возвращаем целое число
     response.errorCode_ = 0; // Команда отработала корректно
-
+    */
+    response = {0,0};
     return response;
 }
 
@@ -230,6 +238,7 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
 {
     api::AdcResponse response; // Поле типа adc_t c ответом и код ошибки команды
     if (timeout <= 0){ return {0,2};}
+    else if (timeout >= 900){timeout = 900;}
     if(!com_.IsOpened())
     {
         com_.Open();
@@ -757,7 +766,7 @@ api::AngleResponse Conserial::GetRotateStep()
     ReadUart(&pack);
 
     // Получаем от МК количество шагов для поворота на 360 градусов
-    float steps_ = pack.param1;
+    uint16_t steps_ = pack.param1;
     if(steps_!=0){  rotateStep_ = 360.0 / steps_;} // Считаем сколько градусов в одном шаге
     response.angle_= rotateStep_;
     response.errorCode_ = 0;
@@ -835,7 +844,7 @@ api::AdcResponse Conserial::GetErrorCode()
         response.errorCode_ = 1; // Не удалось установить соединение
         return response;
     }
-
+/*
     // После установки соединения
     SendUart(dict_.find("GetErrorCode")->second);
 
@@ -844,7 +853,8 @@ api::AdcResponse Conserial::GetErrorCode()
 
     response.adcResponse_ = pack.param1;
     response.errorCode_ = 0; // Команда отработала корректно
-
+*/
+    response = {0,0};
     return response;
 }
 
@@ -868,7 +878,7 @@ api::AdcResponse Conserial::GetTimeout()
         response.adcResponse_ = pack.param1;
         response.errorCode_ = 0; // Команда отработала корректно
         timeoutTime_  = response.adcResponse_;
-
+        cout << timeoutTime_<<endl;
         return response;
 }
 
@@ -1163,4 +1173,3 @@ uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep){
 }
 
 }//namespace
-
