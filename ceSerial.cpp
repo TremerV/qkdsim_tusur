@@ -196,7 +196,7 @@ long ceSerial::GetBaudRate() {
     return baudrate;
 }
 
-ce::UartResponse ceSerial:: Read_com(uint16_t timeout){
+ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
     bool startPackFlag_=false;
     bool flag_ = 0;
     uint8_t buffer = 0;
