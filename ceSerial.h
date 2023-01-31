@@ -10,8 +10,6 @@
 // https://msdn.microsoft.com/en-us/library/ff802693.aspx
 // http://www.cplusplus.com/forum/unices/10491/
 
-#ifndef CESERIAL_H
-#define CESERIAL_H
 #include <string>
 
 namespace ce {
@@ -74,11 +72,7 @@ public:
     char GetParity();
     void SetStopBits(float nbits);
     float GetStopBits();
-
-
 };
 
-
-
 } // namespace ce
-#endif // CESERIAL_H
+
