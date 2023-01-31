@@ -43,43 +43,42 @@ class ceSerial {
 
 
 public:
-	static void Delay(unsigned long ms);
-	ceSerial();
-	ceSerial(std::string Device, long BaudRate, long DataSize, char ParityType, float NStopBits);
-	~ceSerial();
-	long Open(void);//return 0 if success
-	void Close();
+    static void Delay(unsigned long ms);
+    ceSerial();
+    ceSerial(std::string Device, long BaudRate, long DataSize, char ParityType, float NStopBits);
+    ~ceSerial();
+    long Open(void);//return 0 if success
+    void Close();
     char ReadChar();
     char ReadChar(bool& success);//return read char if success
-    ce::UartResponse Read_com(uint16_t timeout);
+    ce::UartResponse Read_com(unsigned int timeout);
     bool WriteChar(char ch);    //return success flag
     bool Write(uint16_t data);
     bool Write(uint8_t data);
     bool Write(char * data);//write null terminated string and return success flag
-	bool Write(char *data,long n);
-	bool SetRTS(bool value);//return success flag
-	bool SetDTR(bool value);//return success flag
-	bool GetCTS(bool& success);
-	bool GetDSR(bool& success);
-	bool GetRI(bool& success);
-	bool GetCD(bool& success);
-	bool IsOpened();
-	void SetPort(std::string Port);
-	std::string GetPort();
-	void SetBaudRate(long baudrate);
-	long GetBaudRate();
-	void SetDataSize(long nbits);
-	long GetDataSize();
-	void SetParity(char p);
-	char GetParity();
-	void SetStopBits(float nbits);
-	float GetStopBits();
+    bool Write(char *data,long n);
+    bool SetRTS(bool value);//return success flag
+    bool SetDTR(bool value);//return success flag
+    bool GetCTS(bool& success);
+    bool GetDSR(bool& success);
+    bool GetRI(bool& success);
+    bool GetCD(bool& success);
+    bool IsOpened();
+    void SetPort(std::string Port);
+    std::string GetPort();
+    void SetBaudRate(long baudrate);
+    long GetBaudRate();
+    void SetDataSize(long nbits);
+    long GetDataSize();
+    void SetParity(char p);
+    char GetParity();
+    void SetStopBits(float nbits);
+    float GetStopBits();
 
 
 };
 
 
 
-} // namespace ce 
+} // namespace ce
 #endif // CESERIAL_H
-
