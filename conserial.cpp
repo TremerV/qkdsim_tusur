@@ -878,7 +878,6 @@ api::AdcResponse Conserial::GetTimeout()
         response.adcResponse_ = pack.param1;
         response.errorCode_ = 0; // Команда отработала корректно
         timeoutTime_  = response.adcResponse_;
-        cout << timeoutTime_<<endl;
         return response;
 }
 
@@ -1165,7 +1164,11 @@ uint8_t Conserial::Crc8(uint8_t *pcBlock, uint8_t len)
 }
 
 uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep){
-
+    /*!!!!!КОСТЫЛЬ!!!!>*/
+    if (angle < 0){
+        angle = angle + 360;
+    }
+    /*<!!!!!КОСТЫЛЬ!!!!*/
     angle = fmod(angle , 360.0); // Подсчет кратчайшего угла поворота
 
     int Steps = round (angle / rotateStep); //Подсчёт и округление шагов
