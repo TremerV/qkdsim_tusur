@@ -66,7 +66,7 @@ api:: InitResponse Conserial:: Init()
 api::InitResponse Conserial::InitByPD()
 {
     api::InitResponse response; // Структура для формирования ответа
-    uint16_t tempTimeOut_ = 600;
+    uint16_t tempTimeOut_ = 900;
     uint16_t tempData = timeoutTime_;
     timeoutTime_ = tempTimeOut_;
 
