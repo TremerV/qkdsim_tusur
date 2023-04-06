@@ -11,6 +11,7 @@
 // http://www.cplusplus.com/forum/unices/10491/
 
 #include <string>
+#include <array>
 
 namespace ce {
 
@@ -18,16 +19,8 @@ struct UartResponse{
         uint8_t status_= 0;
         uint8_t nameCommand_ = 0;
         uint8_t crc_= 0;
-        uint16_t param1= 0;
-        uint16_t param2= 0;
-        uint16_t param3= 0;
-        uint16_t param4= 0;
-        uint16_t param5= 0;
-        uint16_t param6= 0;
-        uint16_t param7= 0;
-        uint16_t param8= 0;
-        uint16_t param9= 0;
-        uint16_t param10= 0;
+        uint16_t parameters_ [10] = {0,0,0,0,0,0,0,0,0,0};
+
     };
 
 class ceSerial {

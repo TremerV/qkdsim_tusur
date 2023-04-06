@@ -133,4 +133,3 @@ private:
 
 } //namespace
 #endif // CONSERIAL_H
-

@@ -206,14 +206,19 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
 
 
     if (!IsOpened()) {std::cout<< "Проверьте соединение со стендом"<<std::endl;
-        return {0,0,0,0,0,0,0,0,0,0,0,0,0};	}
+        return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};	}
     struct pollfd fds;
     fds.fd=fd_;
     fds.events = POLLIN;
 
     while (startPackFlag_ != true) {
         if (poll(&fds, 1, timeout) > 0){
-            read(fd_, &buffer, 1);
+            try {
+                read(fd_, &buffer, 1);
+            }  catch (...) {
+                cerr<<"Проблема с чтением"<< endl;
+                return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};
+            }
             currentByte_ = buffer;
             if (currentByte_ == 255){ flag_ = 1;}
             else {if (flag_ == 1){
@@ -225,23 +230,37 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
         }else {std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
             break;}//конец таймаута
     }
-    uint16_t  params [11] = {0};
+    array <uint16_t,11>  params  = {0,0,0,0,0,0,0,0,0,0,0};
     if (startPackFlag_ == true){
         int count = 10;
         int paramCnt =1;
         unsigned short p=0;
         while (p != 65535) {
             if (poll(&fds, 1, timeout) > 0){
-                read(fd_, &buffer, 1);
+                try {
+                    read(fd_, &buffer, 1);
+                }  catch (...) {
+                    cerr<<"Проблема с чтением"<< endl;
+                    return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};
+                }
                 currentByte_ = buffer;
-                if (count>9){ pack_.status_=currentByte_; }
-                else if (count>8){ pack_.nameCommand_=currentByte_; }
-                else if (count>7){ pack_.crc_=currentByte_; }
+                if (count>9){ pack_.status_=currentByte_;
+                             // p=(p<<8)+currentByte_;
+                }
+                else if (count>8){ pack_.nameCommand_=currentByte_;
+                                   /*p=(p<<8) + currentByte_;
+                                   if(p==65535){
+                                        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}*/}
+                else if (count>7){ pack_.crc_=currentByte_;
+                                   /*p=(p<<8) + currentByte_;
+                                   if(p==65535){
+                                        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}*/}
                 else{
                     p = p + currentByte_;
                     if (count>6){ p = p<<8; }
                     else{
                         paramCnt++;
+                        if (paramCnt> (int)params.size()+1){return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};}
                         if (p==65535){
                             break;}
                         else{
@@ -257,17 +276,9 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
                 break;}
         }
     }else {cout<< " Ответа нет или он некорректный"<<endl;
-        return {0,0,0,0,0,0,0,0,0,0,0,0,0};}
-    pack_.param1 = params[1];
-    pack_.param2 = params[2];
-    pack_.param3 = params[3];
-    pack_.param4 = params[4];
-    pack_.param5 = params[5];
-    pack_.param6 = params[6];
-    pack_.param7 = params[7];
-    pack_.param8 = params[8];
-    pack_.param9 = params[9];
-    pack_.param10 = params[10];
+        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}
+    for(int i=0; i<(int)params.size()-1; i++){pack_.parameters_[i] = params[i+1];};
+
     return pack_ ;
 }
 char ceSerial::ReadChar(bool& success)
