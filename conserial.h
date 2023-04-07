@@ -9,6 +9,7 @@
 #include <abstracthardwareapi.h>
 #include <map>
 #include <ctime>
+#include <debuglogger.h>
 
 namespace hwe
 {
@@ -133,3 +134,4 @@ private:
 
 } //namespace
 #endif // CONSERIAL_H
+
