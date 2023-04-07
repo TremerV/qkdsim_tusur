@@ -272,10 +272,12 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
                     }
                 }
                 count--;
-            }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
-                break;}
+            }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!! \n" << "Параметры не считаны"<<std::endl;
+                tcflush(fd_,TCIOFLUSH);
+                return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}
         }
     }else {cout<< " Ответа нет или он некорректный"<<endl;
+        tcflush(fd_,TCIOFLUSH);
         return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}
     for(int i=0; i<(int)params.size()-1; i++){pack_.parameters_[i] = params[i+1];};
 
@@ -389,3 +391,4 @@ bool ceSerial::GetCD(bool& success) {
 }
 
 } // namespace ce
+
