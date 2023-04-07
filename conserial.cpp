@@ -90,18 +90,18 @@ api::InitResponse Conserial::InitByPD()
 
 
     // Заполняем поля структуры
-    response.startPlatesAngles_.aHalf_  = ((float) pack.parameters_) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
-    response.startPlatesAngles_.aQuart_ = ((float) pack.param2) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.startPlatesAngles_.bHalf_  = ((float) pack.param3) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
-    response.startPlatesAngles_.bQuart_ = ((float) pack.param4) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.startPlatesAngles_.aHalf_  = ((float) pack.parameters_[0]) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.startPlatesAngles_.aQuart_ = ((float) pack.parameters_[1]) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.startPlatesAngles_.bHalf_  = ((float) pack.parameters_[2]) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+    response.startPlatesAngles_.bQuart_ = ((float) pack.parameters_[3]) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
-    response.startLightNoises_.h_ = pack.param5; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
-    response.startLightNoises_.v_ = pack.param6; //<- начальная засветка детектора, принимающего вертикальную поляризацию
+    response.startLightNoises_.h_ = pack.parameters_[4]; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
+    response.startLightNoises_.v_ = pack.parameters_[5]; //<- начальная засветка детектора, принимающего вертикальную поляризацию
 
-    response.maxSignalLevels_.h_ = pack.param7; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.maxSignalLevels_.v_ = pack.param8; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.maxSignalLevels_.h_ = pack.parameters_[6]; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.maxSignalLevels_.v_ = pack.parameters_[7]; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
-    response.maxLaserPower_ = pack.param9;
+    response.maxLaserPower_ = pack.parameters_[9];
 
     response.errorCode_ = 0; // Команда отработала корректно
 
@@ -137,18 +137,18 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
     ReadUart(&pack);
 
     // Заполняем поля структуры
-    response.startPlatesAngles_.aHalf_  = ((float) pack.parameters_) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
-    response.startPlatesAngles_.aQuart_ = ((float) pack.param2) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.startPlatesAngles_.bHalf_  = ((float) pack.param3) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
-    response.startPlatesAngles_.bQuart_ = ((float) pack.param4) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.startPlatesAngles_.aHalf_  = ((float) pack.parameters_[0]) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.startPlatesAngles_.aQuart_ = ((float) pack.parameters_[1]) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.startPlatesAngles_.bHalf_  = ((float) pack.parameters_[2]) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+    response.startPlatesAngles_.bQuart_ = ((float) pack.parameters_[3]) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
-    response.startLightNoises_.h_ = pack.param5; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
-    response.startLightNoises_.v_ = pack.param6; //<- начальная засветка детектора, принимающего вертикальную поляризацию
+    response.startLightNoises_.h_ = pack.parameters_[4]; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
+    response.startLightNoises_.v_ = pack.parameters_[5]; //<- начальная засветка детектора, принимающего вертикальную поляризацию
 
-    response.maxSignalLevels_.h_ = pack.param7; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.maxSignalLevels_.v_ = pack.param8; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.maxSignalLevels_.h_ = pack.parameters_[6]; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.maxSignalLevels_.v_ = pack.parameters_[7]; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
-    response.maxLaserPower_ = pack.param9;
+    response.maxLaserPower_ = pack.parameters_[8];
     maxLaserPower_ = response.maxLaserPower_;
     response.errorCode_ = 0; // Команда отработала корректно
 
@@ -216,16 +216,16 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
 
 
     // Заполняем поля
-    response.newPlatesAngles_.aHalf_  = ((float)pack.parameters_) * rotateStep_; // <- полуволновая пластина "Алисы"     (1я пластинка)
-    response.newPlatesAngles_.aQuart_ = ((float)pack.param2) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.newPlatesAngles_.bHalf_  = ((float)pack.param3) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
-    response.newPlatesAngles_.bQuart_ = ((float)pack.param4) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.newPlatesAngles_.aHalf_  = ((float)pack.parameters_[0]) * rotateStep_; // <- полуволновая пластина "Алисы"     (1я пластинка)
+    response.newPlatesAngles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_; // <- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.newPlatesAngles_.bHalf_  = ((float)pack.parameters_[2]) * rotateStep_; // <- полуволновая пластина "Боба"      (3я пластинка)
+    response.newPlatesAngles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_; // <- четвертьволновая пластина "Боба"  (4я пластинка)
 
-    response.currentLightNoises_.h_ = pack.param5; // <- засветка детектора, принимающего горизонтальную поляризацию
-    response.currentLightNoises_.v_ = pack.param6; // <- засветка детектора, принимающего вертикальную поляризацию
+    response.currentLightNoises_.h_ = pack.parameters_[4]; // <- засветка детектора, принимающего горизонтальную поляризацию
+    response.currentLightNoises_.v_ = pack.parameters_[5]; // <- засветка детектора, принимающего вертикальную поляризацию
 
-    response.currentSignalLevels_.h_ = pack.param7; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.currentSignalLevels_.v_ = pack.param8; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.currentSignalLevels_.h_ = pack.parameters_[6]; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.currentSignalLevels_.v_ = pack.parameters_[7]; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
     response.errorCode_ = 0; // Команда отработала корректно
 
@@ -255,7 +255,7 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
     ce::UartResponse pack;
     ReadUart(&pack);
 
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0; // Команда отработала корректно
     timeoutTime_ = response.adcResponse_ ;
 
@@ -291,7 +291,7 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
     ce::UartResponse pack;
     ReadUart(&pack);
 
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0; // Команда отработала корректно
 
     return response; // Возвращаем значение, соответствующее установленному состоянию
@@ -325,7 +325,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
     ce::UartResponse pack;
     ReadUart(&pack);
 
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0; // Команда отработала корректно
 
     return response; // Возвращаем значение, соответствующее установленному уровню
@@ -367,7 +367,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
 
 
     // Заполняем поля
-    response.angle_ = ((float)pack.parameters_) * rotateStep_;
+    response.angle_ = ((float)pack.parameters_[0]) * rotateStep_;
     response.errorCode_ = 0; // Команда отработала корректно
 
     // Запоминаем новый угол на будущее
@@ -409,10 +409,10 @@ api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
     ReadUart(&pack);
 
     // Заполняем поля
-    response.angles_.aHalf_ = ((float)pack.parameters_) * rotateStep_;
-    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_;
-    response.angles_.bHalf_ = ((float)pack.param3) * rotateStep_;
-    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
+    response.angles_.aHalf_ = ((float)pack.parameters_[0]) * rotateStep_;
+    response.angles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_;
+    response.angles_.bHalf_ = ((float)pack.parameters_[2]) * rotateStep_;
+    response.angles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_;
     response.errorCode_ = 0; // Команда отработала корректно
 
     return response; // Возвращаем, чего там получилось установить
@@ -445,10 +445,10 @@ api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
     ReadUart(&pack);
 
     // Заполняем поля
-    response.angles_.aHalf_ = ((float)pack.parameters_) * rotateStep_;
-    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_;
-    response.angles_.bHalf_ = ((float)pack.param3) * rotateStep_;
-    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_;
+    response.angles_.aHalf_ = ((float)pack.parameters_[0]) * rotateStep_;
+    response.angles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_;
+    response.angles_.bHalf_ = ((float)pack.parameters_[2]) * rotateStep_;
+    response.angles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_;
     response.errorCode_ = 0; // Команда отработала корректно
 
     return response; // Возвращаем, чего там получилось установить
@@ -476,10 +476,10 @@ api::WAnglesResponse Conserial::ReadBaseAngles()
     ReadUart(&pack);
 
     // Записываем полученное в структуру
-    response.angles_.aHalf_  = ((float)pack.parameters_) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
-    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.angles_.bHalf_  = ((float)pack.param3) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
-    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.angles_.aHalf_  = ((float)pack.parameters_[0]) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.angles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.angles_.bHalf_  = ((float)pack.parameters_[2]) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
+    response.angles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
 
     response.errorCode_ = 0;
 
@@ -508,7 +508,7 @@ api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
     ReadUart(&pack);
 
     // Заполняем поля для ответа
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0;
 
     return response; // Возвращаем полученное состояние
@@ -536,7 +536,7 @@ api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
     ReadUart(&pack);
 
     // Заполняем поля для ответа
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0;
 
     return response; // Возвращаем полученное состояние
@@ -565,7 +565,7 @@ api::AdcResponse Conserial::GetLaserState()
     ReadUart(&pack);
 
     // Заполняем поля для ответа
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0; // Команда отработала корректно
 
     return response; // Возвращаем полученное состояние
@@ -594,7 +594,7 @@ api::AdcResponse Conserial::GetLaserPower()
     ReadUart(&pack);
 
     // Заполняем поля для ответа
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0;
 
     return response; // Возвращаем полученное состояние
@@ -621,7 +621,7 @@ api::AdcResponse Conserial::GetMaxLaserPower()
     ReadUart(&pack);
 
     // Заполняем поля для ответа
-    response.adcResponse_ = pack.parameters_;
+    response.adcResponse_ = pack.parameters_[0];
     response.errorCode_ = 0;
 
     return response; // Возвращаем полученное состояние
@@ -648,10 +648,10 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
     ReadUart(&pack);
 
     // Записываем полученное в структуру
-    response.angles_.aHalf_  = ((float)pack.parameters_) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
-    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.angles_.bHalf_  = ((float)pack.param3) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
-    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.angles_.aHalf_  = ((float)pack.parameters_[0]) * rotateStep_; //<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.angles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.angles_.bHalf_  = ((float)pack.parameters_[2]) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
+    response.angles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
 
     response.errorCode_ = 0;
 
@@ -681,10 +681,10 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
     ReadUart(&pack);
 
     // Записываем полученное в структуру
-    response.angles_.aHalf_  = ((float)pack.parameters_) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
-    response.angles_.aQuart_ = ((float)pack.param2) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
-    response.angles_.bHalf_  = ((float)pack.param3) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
-    response.angles_.bQuart_ = ((float)pack.param4) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
+    response.angles_.aHalf_  = ((float)pack.parameters_[0]) * rotateStep_;//<- полуволновая пластина "Алисы"     (1я пластинка)
+    response.angles_.aQuart_ = ((float)pack.parameters_[1]) * rotateStep_; //<- четвертьволновая пластина "Алисы" (2я пластинка)
+    response.angles_.bHalf_  = ((float)pack.parameters_[2]) * rotateStep_; //<- полуволновая пластина "Боба"      (3я пластинка)
+    response.angles_.bQuart_ = ((float)pack.parameters_[3]) * rotateStep_; //<- четвертьволновая пластина "Боба"  (4я пластинка)
 
     response.errorCode_ = 0;
 
@@ -711,8 +711,8 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
     ReadUart(&pack);
 
     // Заполняем структуру
-    response.signal_.h_ = pack.parameters_; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
-    response.signal_.v_ = pack.param2; // <- начальная засветка детектора, принимающего вертикальную поляризацию
+    response.signal_.h_ = pack.parameters_[0]; // <- начальная засветка детектора, принимающего горизонтальную поляризацию
+    response.signal_.v_ = pack.parameters_[1]; // <- начальная засветка детектора, принимающего вертикальную поляризацию
 
     response.errorCode_ = 0;
 
@@ -739,8 +739,8 @@ api::SLevelsResponse Conserial::GetSignalLevels()
     ReadUart(&pack);
 
     // Заполняем структуру для ответа
-    response.signal_.h_ = pack.parameters_; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.signal_.v_ = pack.param2; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.signal_.h_ = pack.parameters_[0]; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.signal_.v_ = pack.parameters_[1]; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
     response.errorCode_ = 0;
 
@@ -766,7 +766,7 @@ api::AngleResponse Conserial::GetRotateStep()
     ReadUart(&pack);
 
     // Получаем от МК количество шагов для поворота на 360 градусов
-    uint16_t steps_ = pack.parameters_;
+    uint16_t steps_ = pack.parameters_[0];
     if(steps_!=0){  rotateStep_ = 360.0 / steps_;} // Считаем сколько градусов в одном шаге
     response.angle_= rotateStep_;
     response.errorCode_ = 0;
@@ -795,8 +795,8 @@ api::SLevelsResponse Conserial::GetLightNoises()
     ReadUart(&pack);
 
     // Заполняем структуру для ответа
-    response.signal_.h_ = pack.parameters_; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.signal_.v_ = pack.param2; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.signal_.h_ = pack.parameters_[0]; // <- уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.signal_.v_ = pack.parameters_[1]; // <- уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
 
     response.errorCode_ = 0;
@@ -825,8 +825,8 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
     ReadUart(&pack);
 
 
-    response.signal_.h_ = pack.parameters_; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
-    response.signal_.v_ = pack.param2; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
+    response.signal_.h_ = pack.parameters_[0]; // <- максимальный уровень сигнала на детекторе, принимающем горизонтальную поляризацию, при включенном лазере
+    response.signal_.v_ = pack.parameters_[1]; // <- максимальный уровень сигнала на детекторе, принимающем вертикальную поляризацию, при включенном лазере
 
     response.errorCode_ = 0;
 
@@ -875,7 +875,7 @@ api::AdcResponse Conserial::GetTimeout()
         ce::UartResponse pack;
         ReadUart(&pack);
 
-        response.adcResponse_ = pack.parameters_;
+        response.adcResponse_ = pack.parameters_[0];
         response.errorCode_ = pack.status_; // Команда отработала корректно
         timeoutTime_  = response.adcResponse_;
         return response;
@@ -1180,3 +1180,4 @@ uint16_t Conserial::CalcSteps(angle_t angle, angle_t rotateStep){
 }
 
 }//namespace
+
