@@ -646,7 +646,6 @@ api::AdcResponse Conserial::GetLaserPower()
 
     // Чтение ответа
     ce::UartResponse pack;
-    ReadUart(&pack);
     int count = 0;
     while (count<=9) {
         SendUart(dict_.find("GetLaserPower")->second);  // Запрос МК
