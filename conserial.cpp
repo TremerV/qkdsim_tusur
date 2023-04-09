@@ -90,6 +90,7 @@ api::InitResponse Conserial::InitByPD()
         SendUart(dict_.find("Init")->second); // Посылаем запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -144,6 +145,7 @@ api::InitResponse Conserial::InitByButtons(WAngles<angle_t> angles)
         SendUart(dict_.find("InitByButtons")->second, steps1_, steps2_, steps3_, steps4_); // Посылаем запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -224,7 +226,13 @@ api::SendMessageResponse Conserial::Sendmessage(WAngles<angle_t> angles, adc_t p
     while (count<=9) {
         SendUart(dict_.find("SendMessage")->second,  steps1, steps2, steps3, steps4, power);
         ReadUart(&pack);
-        if (pack.status_==1){break;}
+        if (pack.status_==1 &&
+            pack.parameters_[0] == steps1 &&
+            pack.parameters_[1] == steps2 &&
+            pack.parameters_[2] == steps3 &&
+            pack.parameters_[3] == steps4){break;}
+
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -270,6 +278,7 @@ api::AdcResponse Conserial::SetTimeout(adc_t timeout)
         SendUart(dict_.find("SetTimeout")->second, timeout);
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -310,6 +319,7 @@ api::AdcResponse Conserial::SetLaserState(adc_t on)
         SendUart(dict_.find("SetLaserState")->second, on); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -347,6 +357,7 @@ api::AdcResponse Conserial::SetLaserPower(adc_t power)
         SendUart(dict_.find("SetLaserPower")->second, power); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -391,6 +402,7 @@ api::AngleResponse Conserial::SetPlateAngle(adc_t plateNumber, angle_t angle)
         SendUart(dict_.find("SetPlateAngle")->second, Steps, plateNumber); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -438,6 +450,7 @@ api::WAnglesResponse Conserial::SetPlatesAngles(WAngles<angle_t> angles)
         SendUart(dict_.find("SetPlatesAngles")->second, steps1_, steps2_, steps3_, steps4_); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -481,6 +494,7 @@ api::WAnglesResponse Conserial::UpdateBaseAngle(WAngles<angle_t> angles)
         SendUart(dict_.find("UpdateBaseAngle")->second, steps1_, steps2_, steps3_, steps4_); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -516,6 +530,7 @@ api::WAnglesResponse Conserial::ReadBaseAngles()
         SendUart(dict_.find("ReadBaseAngles")->second); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -553,6 +568,7 @@ api::AdcResponse Conserial::ReadEEPROM(uint8_t numberUnit_)
         SendUart(dict_.find("ReadEEPROM")->second, numberUnit_); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -586,6 +602,7 @@ api::AdcResponse Conserial::WriteEEPROM(uint8_t numberUnit_, uint16_t param_)
         SendUart(dict_.find("WriteEEPROM")->second, numberUnit_, param_); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -618,6 +635,7 @@ api::AdcResponse Conserial::GetLaserState()
         SendUart(dict_.find("GetLaserState")->second); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -651,6 +669,7 @@ api::AdcResponse Conserial::GetLaserPower()
         SendUart(dict_.find("GetLaserPower")->second);  // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -683,6 +702,7 @@ api::AdcResponse Conserial::GetMaxLaserPower()
         SendUart(dict_.find("GetMaxLaserPower")->second);  // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -717,6 +737,7 @@ api::WAnglesResponse Conserial::GetStartPlatesAngles()
         SendUart(dict_.find("GetStartPlatesAngles")->second);  // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -755,6 +776,7 @@ api::WAnglesResponse Conserial::GetPlatesAngles()
         SendUart(dict_.find("GetCurPlatesAngles")->second);     // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -791,6 +813,7 @@ api::SLevelsResponse Conserial::GetStartLightNoises()
         SendUart(dict_.find("GetStartLightNoises")->second);    // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -824,6 +847,7 @@ api::SLevelsResponse Conserial::GetSignalLevels()
         SendUart(dict_.find("GetSignalLevel")->second);    // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -857,6 +881,7 @@ api::AngleResponse Conserial::GetRotateStep()
         SendUart(dict_.find("GetRotateStep")->second);    // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -892,6 +917,7 @@ api::SLevelsResponse Conserial::GetLightNoises()
         SendUart(dict_.find("GetRotateStep")->second);    // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -926,6 +952,7 @@ api::SLevelsResponse Conserial::GetMaxSignalLevels()
         SendUart(dict_.find("GetMaxSignalLevel")->second); // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
@@ -980,6 +1007,7 @@ api::AdcResponse Conserial::GetTimeout()
         SendUart(dict_.find("GetTimeout")->second);         // Запрос МК
         ReadUart(&pack);
         if (pack.status_==1){break;}
+        ++count;
     }
     if (pack.status_ != 1){ response.errorCode_ = pack.status_;
     }
