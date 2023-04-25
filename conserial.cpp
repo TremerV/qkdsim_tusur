@@ -1028,13 +1028,13 @@ uint16_t Conserial:: SendUart (char commandName){
     uint8_t crc;
 
     uint16_t tempData_=0;
-    tempData_ = (uint8_t) commandName;
+    tempData_ = (uint8_t) commandName + status;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t)commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
     com_.Write(end);
     debug.Return();
     return 1;
@@ -1048,14 +1048,14 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1 ){
     uint8_t null = 0;
     uint8_t crc;
     uint16_t tempData_=0;
-    tempData_ = (uint8_t) commandName + Parameter1;
+    tempData_ = (uint8_t) commandName + status + Parameter1;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
 
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t )commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
@@ -1080,14 +1080,14 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t crc;
 
     uint16_t tempData_=0;
-    tempData_ = (uint8_t) commandName + Parameter1 + Parameter2;
+    tempData_ = (uint8_t) commandName + status + Parameter1 + Parameter2;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
 
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t)commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
@@ -1122,13 +1122,13 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t crc;
 
     uint16_t tempData_=0;
-    tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3;
+    tempData_ = (uint8_t) commandName + status + Parameter1 + Parameter2 + Parameter3;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t )commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
@@ -1172,13 +1172,13 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
     uint8_t crc;
 
     uint16_t tempData_=0;
-    tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3 + Parameter4;
+    tempData_ = (uint8_t) commandName + status + Parameter1 + Parameter2 + Parameter3 + Parameter4;
     crc = Crc8((uint8_t *) &tempData_, sizeof(tempData_));
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t )commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
@@ -1232,13 +1232,13 @@ uint16_t Conserial:: SendUart (char commandName, uint16_t Parameter1, uint16_t P
 
     uint16_t tempData_=0;
 
-    tempData_ = (uint8_t) commandName + Parameter1 + Parameter2 + Parameter3 + Parameter4 + Parameter5;
+    tempData_ = (uint8_t) commandName + status + Parameter1 + Parameter2 + Parameter3 + Parameter4 + Parameter5;
     crc = Crc8((uint8_t *)&tempData_, sizeof(tempData_));
     com_.Write(start1);
     com_.Write(start2);
-    com_.Write(status);
-    com_.Write((uint8_t )commandName);
     com_.Write(crc);
+    com_.Write((uint8_t )commandName);
+    com_.Write(status);
 
     if (Parameter1>=256){
         uint8_t a1 = Parameter1 / 256;
@@ -1297,7 +1297,7 @@ void Conserial::ReadUart(ce::UartResponse * packege_)
      ce::UartResponse pack;
 
     pack = com_.Read_com(timeoutTime_);
-    uint16_t temp = pack.nameCommand_ + pack.parameters_[0] + pack.parameters_[1]
+    uint16_t temp = pack.nameCommand_ + pack.status_+ pack.parameters_[0] + pack.parameters_[1]
             + pack.parameters_[2] + pack.parameters_[3] + pack.parameters_[4]
             + pack.parameters_[5] + pack.parameters_[6] + pack.parameters_[7]
             + pack.parameters_[8]+ pack.parameters_[9];
