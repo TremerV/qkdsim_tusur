@@ -42,28 +42,17 @@ public:
      /// @return Установленный уровень накачки лазера.
      virtual api::AdcResponse SetLaserPower(hwe::adc_t power) = 0;
 
-     /// @param [in] plateNumber Номер волновой пластины.
-     /// @param [in] angle Угол поворота волновой пластины в градусах.
-     /// @return Установленный угол поворота пластины
-     virtual api::AngleResponse SetPlateAngle(hwe::adc_t plateNumber, hwe::angle_t angle) = 0;
-
      /// @return Текущее состояние лазера.
      virtual api::AdcResponse GetLaserState() = 0;
 
      /// @return Текущий уровень накачки лазера.
      virtual api::AdcResponse GetLaserPower() = 0;
 
-     /// @return Максимальный уровень накачки лазера, соответствующий линейным характеристикам детекторов.
-     virtual api::AdcResponse GetMaxLaserPower() = 0;
-
-     /// @return Углы поворотов волновых пласнин, не преобразующих поляризацию сигнала.
-     virtual api::WAnglesResponse GetStartPlatesAngles() = 0;
-
      /// @return Текущие углы поворотов волновых пластин.
      virtual api::WAnglesResponse GetPlatesAngles() = 0;
 
-     /// @return Начальный уровень засветки детекторов, определенный при инициализации
-     virtual api::SLevelsResponse GetStartLightNoises() = 0;
+     /// @return Параметры инициализации
+     virtual api::InitResponse  GetInitParams()=0;
 
      /// @return Уровень сигнала на детекторах.
      virtual api::SLevelsResponse GetSignalLevels() = 0;
@@ -73,9 +62,6 @@ public:
 
      /// @return Текущий уровень засветки детекторов.
      virtual api::SLevelsResponse GetLightNoises() = 0;
-
-     /// @return Уровени сигнала на детекторах при накачке лазера, соответствующей максимуму, вычисленному на этапе инициализации.
-     virtual api::SLevelsResponse GetMaxSignalLevels() = 0;
 
      virtual api::AdcResponse GetErrorCode() = 0;
 

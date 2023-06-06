@@ -11,7 +11,7 @@
 // http://www.cplusplus.com/forum/unices/10491/
 #include <iostream>
 #include <fstream>
-#include "ceSerial.h"
+#include <ceSerial.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -202,23 +202,20 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
     uint8_t buffer = 0;
     ce::UartResponse pack_;
     uint8_t currentByte_=0;
-    timeout = timeout *1000;
+    timeout = timeout * 1000;
 
+    if (!IsOpened())
+    {
+        return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};
+    }
 
-    if (!IsOpened()) {std::cout<< "Проверьте соединение со стендом"<<std::endl;
-        return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};	}
     struct pollfd fds;
     fds.fd=fd_;
     fds.events = POLLIN;
 
     while (startPackFlag_ != true) {
         if (poll(&fds, 1, timeout) > 0){
-            try {
-                read(fd_, &buffer, 1);
-            }  catch (...) {
-                cerr<<"Проблема с чтением"<< endl;
-                return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};
-            }
+            read(fd_, &buffer, 1);
             currentByte_ = buffer;
             if (currentByte_ == 255){ flag_ = 1;}
             else {if (flag_ == 1){
@@ -227,40 +224,36 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
                             break;}
                     }else {flag_ = 0;}
                 }
-        }else {std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<std::endl;
-            break;}//конец таймаута
+        }else {std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!!"<<"\t  Нет начала пакета"<<std::endl;
+            tcflush(fd_,TCIOFLUSH);
+           return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};}//конец таймаута
     }
     array <uint16_t,11>  params  = {0,0,0,0,0,0,0,0,0,0,0};
     if (startPackFlag_ == true){
-        int count = 10;
+        int count = 9;
         int paramCnt =1;
         unsigned short p=0;
         while (p != 65535) {
             if (poll(&fds, 1, timeout) > 0){
-                try {
-                    read(fd_, &buffer, 1);
-                }  catch (...) {
-                    cerr<<"Проблема с чтением"<< endl;
-                    return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};
-                }
+                read(fd_, &buffer, 1);
                 currentByte_ = buffer;
-                if (count>9){ pack_.status_=currentByte_;
-                             // p=(p<<8)+currentByte_;
+                if (count>8){ pack_.nameCommand_=currentByte_;}
+                else if (count>7){
+                    pack_.status_=currentByte_;
+                    if(pack_.status_!=1){
+                        tcflush(fd_,TCIOFLUSH);
+                        return {0,0,pack_.status_,{0,0,0,0,0,0,0,0,0,0}};
+                    }
                 }
-                else if (count>8){ pack_.nameCommand_=currentByte_;
-                                   /*p=(p<<8) + currentByte_;
-                                   if(p==65535){
-                                        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}*/}
-                else if (count>7){ pack_.crc_=currentByte_;
-                                   /*p=(p<<8) + currentByte_;
-                                   if(p==65535){
-                                        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}*/}
                 else{
                     p = p + currentByte_;
                     if (count>6){ p = p<<8; }
                     else{
                         paramCnt++;
-                        if (paramCnt> (int)params.size()+1){return {0,0,0,{0,0,0,0,0,0,0,0,0,0}};}
+                        if (paramCnt> (int)params.size()+1){
+                            tcflush(fd_,TCIOFLUSH);
+                            return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};
+                        }
                         if (p==65535){
                             break;}
                         else{
@@ -272,16 +265,48 @@ ce::UartResponse ceSerial:: Read_com(unsigned int timeout){
                     }
                 }
                 count--;
-            }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!! \n" << "Параметры не считаны"<<std::endl;
+            }else{std::cout<< "!!!ВЫШЕЛ ТАЙМАУТ!!! \t" << "Параметры не считаны"<<std::endl;
                 tcflush(fd_,TCIOFLUSH);
-                return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}
+                return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};}
         }
     }else {cout<< " Ответа нет или он некорректный"<<endl;
         tcflush(fd_,TCIOFLUSH);
-        return {3,0,0,{0,0,0,0,0,0,0,0,0,0}};}
-    for(int i=0; i<(int)params.size()-1; i++){pack_.parameters_[i] = params[i+1];};
-
+        return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};}
+    // Формирование массива для подсчета CRC
+    uint8_t temp_[64] = {pack_.nameCommand_,pack_.status_};
+    int j = 1;
+    for (int i = 2; i <= 2*params[0]; i= i+2){
+        temp_[i] = params[j]>>8;
+        temp_[i+1] = params[j];
+        j++;
+    };
+    int crc = Crc8((uint8_t*)&temp_,2*(uint8_t)params[0]+2);
+    //Подсчет CRC
+    if(crc!=0){
+        cout<< "WrongCheckSum"<<"\t" << crc <<endl;
+        return {0,0,3,{0,0,0,0,0,0,0,0,0,0}};
+    }
+    //Формирование параметров
+    for(int i=0; i<(int)params.size()-1; i++){
+        if(i+1 != params[0])
+            pack_.parameters_[i] = params[i+1];
+        else {
+            pack_.crc_ = params[i+1];
+            break;
+        }
+    };
     return pack_ ;
+}
+uint8_t ceSerial::Crc8(uint8_t *pcBlock, uint8_t len)
+{
+
+    uint8_t crc = 0xFF;
+
+    while (len--)
+        crc = Crc8Table[crc ^ *pcBlock++];
+
+
+    return crc;
 }
 char ceSerial::ReadChar(bool& success)
 {
