@@ -26,7 +26,6 @@ public:
     Conserial();
     virtual ~Conserial();
 
-    // Эти команды вот в таком виде нужно реализовать в файле .cpp
     virtual api::InitResponse Init();
     virtual api::InitResponse InitByPD();
     virtual api::InitResponse InitByButtons(WAngles<angle_t> angles);
@@ -62,19 +61,22 @@ private:
         angle_t rotateStep_ = 0.3;
         adc_t maxLaserPower_ = 100;
     };
-    Conserial::StandOptions stand;
+    Conserial::StandOptions stand; // Структура, хранящая текущее состояние стенда
 
-    uint16_t SendUart (char comandName,int N,...);
+
     uint8_t Crc8(uint8_t *pcBlock, uint8_t len);
+
     uint16_t CalcStep(angle_t angle, angle_t rotateStep);
     WAngles<adc_t> CalcSteps(WAngles<angle_t> angles);
     WAngles<angle_t> CalcAngles(WAngles<adc_t> steps);
-    ce::UartResponse Twiting (char commandName, int N,... );
-    uint8_t CheckStatus(uint8_t status);
-    // void ReadUart(ce::UartResponse * packege_);
 
+    ce::UartResponse Twiting (char commandName, int N,... );
+    uint16_t SendUart (char comandName,int N,...);
+
+    uint8_t CheckStatus(uint8_t status);
     bool StandIsConected ();
 
+    //Таблица для подсчёта CRC
     const uint8_t Crc8Table[256] = {
         0x00, 0x31, 0x62, 0x53, 0xC4, 0xF5, 0xA6, 0x97,
         0xB9, 0x88, 0xDB, 0xEA, 0x7D, 0x4C, 0x1F, 0x2E,
@@ -111,7 +113,7 @@ private:
     };
 
 
-
+    //Мапа название команды -- ключ команды
     const std::map <std::string, char> dict_ = {
         {"Init", 'A'},
         {"SendMessage", 'B'},

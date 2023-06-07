@@ -477,7 +477,7 @@ api::InitResponse Conserial::GetInitParams(){
 };
 
 ce::UartResponse Conserial::Twiting (char commandName, int N,... ){
-
+    DebugLogger debug(__FUNCTION__);
     ce::UartResponse pack;
     // Проверка соединения
     if (!StandIsConected())
@@ -496,7 +496,7 @@ ce::UartResponse Conserial::Twiting (char commandName, int N,... ){
     va_end(temp_params);
 
     int count = 0;
-    while (count<=9) {
+    while (count<9) {
         //SendUart      //Посылаем запрос МК
         switch (N) {
         case 0:
@@ -531,7 +531,7 @@ ce::UartResponse Conserial::Twiting (char commandName, int N,... ){
 
 //Функция передачи по uart
 uint16_t Conserial:: SendUart (char commandName,int N,...){
-
+    DebugLogger debug(__FUNCTION__);
     uint8_t start1 = 255;
     uint8_t start2 = 254;
     uint16_t end = 65535;
@@ -570,6 +570,7 @@ uint16_t Conserial:: SendUart (char commandName,int N,...){
 }
 
 uint8_t Conserial::CheckStatus(uint8_t status){
+    DebugLogger debug(__FUNCTION__);
     uint8_t errorCode = 3;
     switch (status) {
         case 1:
@@ -640,9 +641,9 @@ WAngles<angle_t> Conserial::CalcAngles(WAngles<adc_t> steps)
     DebugLogger debug(__FUNCTION__, 2, steps, stand.rotateStep_);
     WAngles<angle_t> angles;
     angles.aHalf_ = ((float)steps.aHalf_) * stand.rotateStep_;
-    angles.aQuart_ = ((float)steps.aHalf_) * stand.rotateStep_;
-    angles.bHalf_ = ((float)steps.aHalf_) * stand.rotateStep_;
-    angles.bQuart_ = ((float)steps.aHalf_) * stand.rotateStep_;
+    angles.aQuart_ = ((float)steps.aQuart_) * stand.rotateStep_;
+    angles.bHalf_ = ((float)steps.bHalf_) * stand.rotateStep_;
+    angles.bQuart_ = ((float)steps.bQuart_) * stand.rotateStep_;
     return angles;
 }
 
